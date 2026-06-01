@@ -1,0 +1,220 @@
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #555555;
+  --color-border: #e0e0e0;
+  --color-accent: #0b5394;
+  --color-accent-hover: #073463;
+  --color-nysed: #0b5394;
+  --color-oasas: #6a3093;
+  --color-aama: #c0392b;
+  --color-soft-bg: #f6f7f9;
+  --radius: 10px;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --max-width: 980px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-3);
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  margin: 0 0 var(--space-2);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a:hover { color: var(--color-accent-hover); }
+
+.hero {
+  padding: var(--space-3) 0 var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.hero h1 { font-size: 2rem; }
+.hero-body { color: var(--color-muted); font-size: 1.05rem; }
+
+.eligibility-teaser {
+  background: var(--color-soft-bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  margin: var(--space-3) 0;
+  border-left: 4px solid var(--color-accent);
+}
+.eligibility-teaser h2 { font-size: 1.05rem; margin-bottom: var(--space-1); }
+
+.how-it-works {
+  margin: var(--space-4) 0;
+}
+.how-it-works h2 { font-size: 1.35rem; }
+
+.profession-grid {
+  margin: var(--space-4) 0;
+}
+.profession-grid-heading {
+  font-size: 1.35rem;
+  margin-bottom: var(--space-3);
+}
+.profession-grid-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.profession-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+.profession-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.profession-card-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  flex: 1;
+}
+
+.regulator-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #fff;
+  text-transform: uppercase;
+}
+.regulator-nysed { background: var(--color-nysed); }
+.regulator-oasas { background: var(--color-oasas); }
+.regulator-aama { background: var(--color-aama); }
+
+.profession-card-body { font-size: 0.95rem; }
+.profession-card-body p { margin: var(--space-1) 0; }
+
+.form1-download a {
+  display: inline-block;
+  font-weight: 600;
+}
+.form1-revision {
+  display: inline-block;
+  margin-left: var(--space-1);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.checklist-link a {
+  font-size: 0.9rem;
+}
+
+.fee-section {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--color-border);
+}
+.fee-section h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  margin-bottom: var(--space-1);
+}
+.fee-notes {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: var(--space-1);
+}
+
+.asana-trigger {
+  appearance: none;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.asana-trigger:hover { background: var(--color-accent-hover); }
+
+.walk-in-notice {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+.asana-modal {
+  width: min(960px, 95vw);
+  height: min(720px, 92vh);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.asana-modal::backdrop { background: rgba(0,0,0,0.6); }
+.asana-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-soft-bg);
+}
+.asana-modal-header h3 { font-size: 1rem; margin: 0; }
+.asana-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  color: var(--color-muted);
+}
+.asana-modal-body {
+  height: calc(100% - 56px);
+}
+.asana-modal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.faq, .contact-footer {
+  margin: var(--space-4) 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.faq h2, .contact-footer h2 { font-size: 1.25rem; }
+
+@media (max-width: 600px) {
+  .profession-grid-items { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.6rem; }
+}

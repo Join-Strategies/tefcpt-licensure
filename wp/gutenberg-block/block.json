@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "tefcpt/licensure-page",
+  "title": "TEF-CPT Licensure Page",
+  "category": "widgets",
+  "icon": "id",
+  "description": "Renders the Licensure & Exam Fees page from ACF data. Placeholder block for the MVP — the ACF flexible-content layout can be used instead if simpler.",
+  "supports": {
+    "html": false,
+    "align": false,
+    "anchor": false
+  },
+  "render": "file:./render.php",
+  "textdomain": "tefcpt"
+}

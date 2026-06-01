@@ -1,0 +1,9 @@
+---
+import { getEntry } from 'astro:content';
+const entry = await getEntry('page', 'contact');
+const { Content } = await entry!.render();
+---
+<footer class="contact-footer">
+  <h2>{entry!.data.title}</h2>
+  <Content />
+</footer>

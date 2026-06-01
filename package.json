@@ -1,0 +1,23 @@
+{
+  "name": "tefcpt-licensure-page",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TEF-CPT Licensure & Exam Fees participant-facing page. Design source + WP deployment scaffolding.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "refresh-pdfs": "node scripts/refresh-pdfs.mjs",
+    "deploy-wp": "bash scripts/deploy-to-wp.sh",
+    "verify": "node scripts/verify-live-page.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import Page from '../layouts/Page.astro';
+import Hero from '../components/Hero.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import EligibilityTeaser from '../components/EligibilityTeaser.astro';
+import ProfessionCard from '../components/ProfessionCard.astro';
+import FAQ from '../components/FAQ.astro';
+import ContactFooter from '../components/ContactFooter.astro';
+
+const professions = (await getCollection('professions')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+<Page
+  title="Licensure & Exam Fees"
+  description="TEF-CPT participants: how to apply for licensure and exam fee coverage by profession."
+>
+  <Hero />
+  <EligibilityTeaser />
+  <HowItWorks />
+
+  <section class="profession-grid" aria-label="Professions">
+    <h2 class="profession-grid-heading">Find your profession</h2>
+    <div class="profession-grid-items">
+      {professions.map((profession) => (
+        <ProfessionCard profession={profession} />
+      ))}
+    </div>
+  </section>
+
+  <FAQ />
+  <ContactFooter />
+</Page>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const trigger = target.closest('[data-modal-target]') as HTMLElement | null;
+    if (trigger) {
+      const modalId = trigger.getAttribute('data-modal-target')!;
+      const src = trigger.getAttribute('data-asana-src')!;
+      const dialog = document.getElementById(modalId) as HTMLDialogElement | null;
+      if (!dialog) return;
+      const iframe = dialog.querySelector('iframe[data-asana-iframe]') as HTMLIFrameElement | null;
+      if (iframe && iframe.src !== src) iframe.src = src;
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      return;
+    }
+    const closer = target.closest('[data-modal-close]') as HTMLElement | null;
+    if (closer) {
+      const modalId = closer.getAttribute('data-modal-close')!;
+      const dialog = document.getElementById(modalId) as HTMLDialogElement | null;
+      if (!dialog) return;
+      if (typeof dialog.close === 'function') dialog.close();
+      else dialog.removeAttribute('open');
+    }
+  });
+</script>

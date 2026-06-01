@@ -1,0 +1,9 @@
+---
+import { getEntry } from 'astro:content';
+const entry = await getEntry('page', 'faq');
+const { Content } = await entry!.render();
+---
+<section class="faq">
+  <h2>{entry!.data.title}</h2>
+  <Content />
+</section>
