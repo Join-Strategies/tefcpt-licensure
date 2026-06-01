@@ -9,6 +9,7 @@ const { profession } = Astro.props;
 const data = profession.data;
 const slug = profession.slug;
 const { Content } = await profession.render();
+const base = import.meta.env.BASE_URL;
 ---
 <article class="profession-card" id={`profession-${slug}`} data-regulator={data.regulator}>
   <header class="profession-card-header">
@@ -21,7 +22,7 @@ const { Content } = await profession.render();
 
     {data.form1Pdf && (
       <p class="form1-download">
-        <a href={data.form1Pdf} download>
+        <a href={`${base}${data.form1Pdf.replace(/^\//, '')}`} download>
           Download Form 1 (PDF)
         </a>
         {data.form1Revision && <small class="form1-revision">{data.form1Revision}</small>}
