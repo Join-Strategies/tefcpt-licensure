@@ -28,7 +28,7 @@ jobs:
       - run: npm ci
 
       - name: Build
-        run: npx astro build --site https://join-strategies.github.io --base /tefcpt-licensure
+        run: npx astro build --site https://join-strategies.github.io --base /tefcpt-licensure/
 
       - uses: actions/upload-pages-artifact@v3
         with:
