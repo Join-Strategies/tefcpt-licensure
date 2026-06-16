@@ -29,13 +29,21 @@ const base = import.meta.env.BASE_URL;
       </p>
     )}
 
-    {data.checklistUrl && (
+    {data.checklistUrls && data.checklistUrls.length > 0 ? (
+      data.checklistUrls.map(({ url, label }) => (
+        <p class="checklist-link">
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            NYSED applicant checklist ({label}) ↗
+          </a>
+        </p>
+      ))
+    ) : data.checklistUrl ? (
       <p class="checklist-link">
         <a href={data.checklistUrl} target="_blank" rel="noopener noreferrer">
           NYSED applicant checklist ↗
         </a>
       </p>
-    )}
+    ) : null}
 
     {data.licensureFee && (
       <section class="fee-section">

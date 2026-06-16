@@ -16,6 +16,7 @@ const professionCollection = defineCollection({
     licensureFee: feeProcessSchema.nullable(),
     examFee: feeProcessSchema.nullable(),
     checklistUrl: z.string().url().nullable(),
+    checklistUrls: z.array(z.object({ url: z.string().url(), label: z.string() })).optional(),
     needsContentReview: z.boolean().default(false),
     reviewNotes: z.string().optional(),
     order: z.number(),
