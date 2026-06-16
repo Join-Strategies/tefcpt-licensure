@@ -14,17 +14,23 @@ npm run dev
 Then visit `/prototype` and use the floating bottom-center switcher (or ← / → arrow keys) to
 flip between the three guided UIs. The variant is also in the URL: `?variant=A|B|C`.
 
-All three render the **same flow**, derived live from the `professions` content collection:
+All three render the **same flow**, derived live from the `professions` content collection.
+The flow is intentionally **non-linear**: a "how it works" walkthrough, then a prerequisite
+**gate** (notarization), then a **hub** where the fee tasks are a choice, not a forced sequence.
 
 ```
-Eligibility gate -> Pick profession -> (branch by regulator) -> tailored steps -> done
-  NYSED:  download Form 1 -> notarize -> licensure fee -> exam fee -> checklist
-  OASAS:  combined intake form -> TEF letter -> upload to OASAS
-  AAMA:   exam fee only
+Eligibility -> Pick profession -> "How it works" walkthrough -> GATE -> Fee hub (pick what you need) -> done
+  NYSED:  download Form 1 -> get it NOTARIZED -> submit
+            GATE: "Is your Form 1 notarized?" (must confirm before any fee form opens)
+            hub: Licensure fee  /  Exam fee  (do one, both, or neither)
+  OASAS:  intake form -> TEF letter -> upload to OASAS   (gate: "ready to start?", no notarization)
+  AAMA:   exam fee only                                   (gate: "ready?", single step)
 ```
 
-Walk-in fees and missing forms are handled by the data-driven step builder. Asana forms and
-PDF downloads are **stubbed** (no real submissions).
+The notarization gate is the key fix: people walk the steps first and only reach a fee form
+once they confirm they're ready, so they can't start a form and lose their place. Walk-in fees
+and missing forms are handled by the data-driven builders. Asana forms and PDF downloads are
+**stubbed** (no real submissions).
 
 ## The three variants
 

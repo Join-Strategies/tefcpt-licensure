@@ -259,82 +259,96 @@ const config = {
     `<div class="proto-stub"><span class="proto-stub-tag">Prototype stub</span>` +
     `<div>${esc(label)} — the live form/PDF is wired up in the real page; here it's a placeholder.</div></div>`;
 
-  // Build the ordered guided steps for a profession from its data.
-  function buildSteps(p) {
-    const steps = [];
-    steps.push({
-      title: p.name,
-      regulator: p.regulator,
-      bodyHtml: md(p.intro),
-    });
-    if (p.form1Pdf) {
+  // The "how it works" walkthrough + the prerequisite gate that unlocks the fee forms.
+  // The gate is the notarization checkpoint: people only reach the form once they confirm
+  // they're ready, so they can't start a form and lose their place.
+  function processFlow(p) {
+    if (p.regulator === 'NYSED') {
       const rev = p.form1Revision ? ` <em>(${esc(p.form1Revision)})</em>` : '';
-      steps.push({
-        title: 'Download & complete Form 1',
-        bodyHtml: `Download Form 1 for your profession and fill it out.${rev}` + stub('Download Form 1 (PDF)'),
-      });
-      steps.push({
-        title: 'Get Form 1 notarized',
-        bodyHtml: 'New York State requires Form 1 to be <strong>notarized</strong> before you submit it to TEF.',
-      });
+      return {
+        steps: [
+          {
+            title: 'Download & complete Form 1',
+            bodyHtml: `Download Form 1 for <strong>${esc(p.name)}</strong> and fill it out completely.${rev}` + (p.form1Pdf ? stub('Download Form 1 (PDF)') : ''),
+          },
+          {
+            title: 'Get Form 1 notarized',
+            bodyHtml: 'New York State requires your Form 1 to be <strong>notarized</strong>. Do this <strong>before</strong> you start the fee request — the form is quick and you don\'t want to lose your place partway through.',
+          },
+          {
+            title: 'Submit to TEF with your fee request',
+            bodyHtml: 'Once it\'s notarized, you submit Form 1 through the fee request. TEF mails it to New York State along with your payment.',
+          },
+        ],
+        gateTitle: 'Is your Form 1 notarized?',
+        gateBody: 'You\'ll need a completed, notarized Form 1 in hand to finish the fee request in one sitting.',
+        gateYes: 'Yes — my Form 1 is notarized',
+        gateNo: 'Not yet — I still need to notarize',
+        gateNoBody: 'No problem. Get your completed Form 1 notarized, then come back and pick up right here.',
+      };
     }
-    if (p.licensure.kind === 'asana') {
-      steps.push({
-        title: 'Submit your licensure fee request',
-        bodyHtml:
-          (p.licensure.notes ? md(p.licensure.notes) : 'TEF will pay your licensure / application fee. Submit the request to get started.') +
-          stub('Open licensure fee request form'),
-      });
-    } else if (p.licensure.kind === 'walkin') {
-      steps.push({
-        title: 'Licensure fee — handled walk-in',
-        bodyHtml: md(p.licensure.notes || 'Handled walk-in. Contact career services for next steps.'),
-      });
+    if (p.regulator === 'OASAS') {
+      return {
+        steps: [
+          { title: 'Submit your CASAC intake form', bodyHtml: 'CASAC is regulated by <strong>OASAS</strong>, not NYSED. Start with TEF\'s combined intake form — it covers both licensure and exam fees.' },
+          { title: 'TEF emails you a confirmation letter', bodyHtml: 'After you submit, TEF emails you an OASAS letter confirming payment.' },
+          { title: 'Upload the letter to OASAS', bodyHtml: 'Attach that confirmation letter when you submit your licensure and exam fee application to OASAS.' },
+        ],
+        gateTitle: 'Ready to start your intake?',
+        gateBody: 'No notarization needed for CASAC — the combined intake form is your first step.',
+        gateYes: 'Start my intake form',
+        gateNo: null,
+      };
     }
-    if (p.exam.kind === 'asana') {
-      steps.push({
-        title: 'Submit your exam fee request',
-        bodyHtml:
-          (p.exam.notes ? md(p.exam.notes) : 'TEF can cover your exam fee. Submit the request to get started.') +
-          stub('Open exam fee request form'),
-      });
-    } else if (p.exam.kind === 'walkin') {
-      steps.push({
-        title: 'Exam fee — handled walk-in',
-        bodyHtml: md(p.exam.notes || 'Handled walk-in. Contact career services for next steps.'),
-      });
-    }
-    if (p.checklists.length) {
-      const links = p.checklists
-        .map((c) => `<a href="${c.url}" target="_blank" rel="noopener">Official NYSED checklist (${esc(c.label)}) &#8599;</a>`)
-        .join('<br>');
-      steps.push({ title: 'Review the official NYSED checklist', bodyHtml: links });
-    }
-    steps.push({
-      title: "You're all set",
-      bodyHtml: `That covers the steps for <strong>${esc(p.name)}</strong>.<br><br>${md(CONFIG.contactText)}`,
-      done: true,
-    });
-    return steps;
+    return {
+      steps: [
+        { title: 'TEF can cover your exam fee', bodyHtml: `<strong>${esc(p.name)}</strong> is certified nationally through AAMA (not New York State). TEF can pay your exam fee for eligible participants — no Form 1 or notarization required.` },
+      ],
+      gateTitle: 'Ready to request your exam fee?',
+      gateBody: 'Just one step for you.',
+      gateYes: 'Start my exam fee request',
+      gateNo: null,
+    };
+  }
+
+  // The actionable fee tasks — the non-linear part. Pick what you need; do one, both, or neither.
+  function feeTasks(p) {
+    const tasks = [];
+    if (p.licensure.kind === 'asana')
+      tasks.push({ key: 'lic', label: 'Licensure / application fee', bodyHtml: (p.licensure.notes ? md(p.licensure.notes) : 'Submit your licensure fee request to TEF.') + stub('Open licensure fee request form') });
+    else if (p.licensure.kind === 'walkin')
+      tasks.push({ key: 'lic', label: 'Licensure fee — walk-in', bodyHtml: md(p.licensure.notes || 'Handled walk-in. Contact career services for next steps.') });
+    if (p.exam.kind === 'asana')
+      tasks.push({ key: 'exam', label: 'Exam fee', bodyHtml: (p.exam.notes ? md(p.exam.notes) : 'Submit your exam fee request to TEF.') + stub('Open exam fee request form') });
+    else if (p.exam.kind === 'walkin')
+      tasks.push({ key: 'exam', label: 'Exam fee — walk-in', bodyHtml: md(p.exam.notes || 'Handled walk-in. Contact career services for next steps.') });
+    return tasks;
+  }
+
+  function checklistHtml(p) {
+    if (!p.checklists.length) return '';
+    return '<p style="margin-top:var(--space-2)">' + p.checklists.map((c) => `<a href="${c.url}" target="_blank" rel="noopener">Official NYSED checklist (${esc(c.label)}) &#8599;</a>`).join('<br>') + '</p>';
   }
 
   // ===== Variant A — full-screen Typeform =================================
+  // Walks the "how it works" steps, hits a notarization gate, then a non-linear fee hub.
   function mountA(root) {
-    const state = { phase: 'eligibility', slug: null, idx: 0 };
+    const state = { phase: 'eligibility', slug: null, idx: 0, task: null, done: {} };
+    const flow = () => processFlow(profBySlug(state.slug));
+    const tasks = () => feeTasks(profBySlug(state.slug));
 
-    function totalForProgress() {
-      // eligibility + profession + steps
-      if (!state.slug) return 2;
-      return 2 + buildSteps(profBySlug(state.slug)).length;
-    }
-    function progressIndex() {
-      if (state.phase === 'eligibility' || state.phase === 'ineligible') return 0;
-      if (state.phase === 'profession') return 1;
-      return 2 + state.idx;
+    function progress() {
+      if (state.phase === 'eligibility' || state.phase === 'ineligible') return 0.05;
+      if (state.phase === 'profession') return 0.15;
+      if (state.phase === 'process') return 0.2 + 0.4 * ((state.idx + 1) / (flow().steps.length + 1));
+      if (state.phase === 'gate' || state.phase === 'gateNo') return 0.65;
+      if (state.phase === 'detail') return 0.85;
+      return 1;
     }
 
     function render() {
-      const pct = Math.round((progressIndex() / Math.max(1, totalForProgress() - 1)) * 100);
+      const pct = Math.round(progress() * 100);
+      const p = state.slug ? profBySlug(state.slug) : null;
       let stage = '';
 
       if (state.phase === 'eligibility') {
@@ -354,31 +368,79 @@ const config = {
           <div class="tf-nav"><button class="proto-btn ghost" data-act="back">← Back</button></div>`;
       } else if (state.phase === 'profession') {
         const choices = PROFS.map(
-          (p, i) =>
-            `<button class="tf-choice" data-act="pick" data-slug="${p.slug}">
+          (pr, i) =>
+            `<button class="tf-choice" data-act="pick" data-slug="${pr.slug}">
               <span class="tf-key">${i + 1}</span>
-              <span>${esc(p.name)}</span>
-              <span class="proto-badge" data-reg="${p.regulator}" style="margin-left:auto">${p.regulator}</span>
+              <span>${esc(pr.name)}</span>
+              <span class="proto-badge" data-reg="${pr.regulator}" style="margin-left:auto">${pr.regulator}</span>
             </button>`
         ).join('');
         stage = `
           <p class="tf-kicker">Step 1</p>
           <h2>What are you pursuing?</h2>
-          <p class="tf-body">Pick your profession and we'll show only the steps that apply to you.</p>
+          <p class="tf-body">Pick your profession and we'll walk you through how it works.</p>
           <div class="tf-choices" data-choices>${choices}</div>`;
-      } else {
-        const steps = buildSteps(profBySlug(state.slug));
-        const s = steps[state.idx];
-        const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
+      } else if (state.phase === 'process') {
+        const f = flow();
+        const s = f.steps[state.idx];
+        const last = state.idx === f.steps.length - 1;
         stage = `
-          <p class="tf-kicker">Step ${state.idx + 1} of ${steps.length}</p>
-          <h2>${esc(s.title)}${reg}</h2>
+          <p class="tf-kicker">How it works · ${state.idx + 1} of ${f.steps.length} <span class="proto-badge" data-reg="${p.regulator}">${p.regulator}</span></p>
+          <h2>${esc(s.title)}</h2>
           <div class="tf-body">${s.bodyHtml}</div>
           <div class="tf-nav">
             <button class="proto-btn ghost" data-act="prev">← Back</button>
             <span class="tf-hint">Press <strong>Enter</strong> to continue</span>
-            <button class="proto-btn" data-act="next">${s.done ? 'Start over' : 'Continue →'}</button>
+            <button class="proto-btn" data-act="${last ? 'togate' : 'next'}">${last ? 'Next: get started →' : 'Continue →'}</button>
           </div>`;
+      } else if (state.phase === 'gate') {
+        const f = flow();
+        const choices = (f.gateNo
+          ? [[f.gateYes, 'gate-yes'], [f.gateNo, 'gate-no']]
+          : [[f.gateYes, 'gate-yes']]
+        ).map(([label, act], i) => `<button class="tf-choice" data-act="${act}"><span class="tf-key">${i + 1}</span>${esc(label)}</button>`).join('');
+        stage = `
+          <p class="tf-kicker">Before the form</p>
+          <h2>${esc(f.gateTitle)}</h2>
+          <p class="tf-body">${esc(f.gateBody)}</p>
+          <div class="tf-choices" data-choices>${choices}</div>`;
+      } else if (state.phase === 'gateNo') {
+        const f = flow();
+        stage = `
+          <p class="tf-kicker">Almost there</p>
+          <h2>Get Form 1 notarized first</h2>
+          <p class="tf-body">${esc(f.gateNoBody)}</p>
+          <div class="tf-nav"><button class="proto-btn ghost" data-act="back-process">← Back to the steps</button></div>`;
+      } else if (state.phase === 'detail') {
+        if (state.task) {
+          const t = tasks().find((x) => x.key === state.task);
+          stage = `
+            <p class="tf-kicker">${esc(p.name)}</p>
+            <h2>${esc(t.label)}</h2>
+            <div class="tf-body">${t.bodyHtml}</div>
+            <div class="tf-nav">
+              <button class="proto-btn ghost" data-act="hub">← Other options</button>
+              <button class="proto-btn" data-act="mark-done">${state.done[t.key] ? 'Done ✓' : 'Mark done →'}</button>
+            </div>`;
+        } else {
+          const ts = tasks();
+          const choices = ts.map((t, i) =>
+            `<button class="tf-choice" data-act="task" data-task="${t.key}"><span class="tf-key">${i + 1}</span><span>${esc(t.label)}</span>${state.done[t.key] ? '<span style="margin-left:auto;color:var(--color-accent)">✓ done</span>' : ''}</button>`
+          ).join('');
+          stage = `
+            <p class="tf-kicker">${esc(p.name)}</p>
+            <h2>What do you need to pay for?</h2>
+            <p class="tf-body">Pick one — you can come back for the other.${checklistHtml(p)}</p>
+            <div class="tf-choices" data-choices>${choices}
+              <button class="tf-choice" data-act="finish"><span class="tf-key">${ts.length + 1}</span>I'm all set</button>
+            </div>`;
+        }
+      } else {
+        stage = `
+          <p class="tf-kicker">Done</p>
+          <h2>You're all set</h2>
+          <div class="tf-body">${md(CONFIG.contactText)}</div>
+          <div class="tf-nav"><button class="proto-btn" data-act="restart">Start over</button></div>`;
       }
 
       root.innerHTML = `
@@ -388,28 +450,25 @@ const config = {
         </div>`;
     }
 
-    function advance() {
-      const steps = buildSteps(profBySlug(state.slug));
-      if (steps[state.idx].done) {
-        state.phase = 'eligibility'; state.slug = null; state.idx = 0;
-      } else {
-        state.idx = Math.min(state.idx + 1, steps.length - 1);
-      }
-      render();
-    }
-
     root.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-act]');
       if (!btn) return;
-      const act = btn.dataset.act;
-      if (act === 'yes') { state.phase = 'profession'; }
-      else if (act === 'no') { state.phase = 'ineligible'; }
-      else if (act === 'back') { state.phase = 'eligibility'; }
-      else if (act === 'pick') { state.slug = btn.dataset.slug; state.phase = 'steps'; state.idx = 0; }
-      else if (act === 'next') { advance(); return; }
-      else if (act === 'prev') {
-        if (state.idx === 0) { state.phase = 'profession'; state.slug = null; }
-        else state.idx -= 1;
+      switch (btn.dataset.act) {
+        case 'yes': state.phase = 'profession'; break;
+        case 'no': state.phase = 'ineligible'; break;
+        case 'back': state.phase = 'eligibility'; break;
+        case 'pick': state.slug = btn.dataset.slug; state.phase = 'process'; state.idx = 0; state.done = {}; break;
+        case 'next': state.idx = Math.min(state.idx + 1, flow().steps.length - 1); break;
+        case 'prev': if (state.idx === 0) { state.phase = 'profession'; state.slug = null; } else state.idx -= 1; break;
+        case 'togate': state.phase = 'gate'; break;
+        case 'gate-yes': state.phase = 'detail'; state.task = null; break;
+        case 'gate-no': state.phase = 'gateNo'; break;
+        case 'back-process': state.phase = 'process'; state.idx = flow().steps.length - 1; break;
+        case 'task': state.task = btn.dataset.task; break;
+        case 'mark-done': state.done[state.task] = true; state.task = null; break;
+        case 'hub': state.task = null; break;
+        case 'finish': state.phase = 'finish'; break;
+        case 'restart': state.phase = 'eligibility'; state.slug = null; state.idx = 0; state.task = null; state.done = {}; break;
       }
       render();
     });
@@ -418,7 +477,12 @@ const config = {
       if (root.hidden) return;
       const a = document.activeElement;
       if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return;
-      if (e.key === 'Enter' && state.phase === 'steps') { advance(); return; }
+      if (e.key === 'Enter' && state.phase === 'process') {
+        if (state.idx === flow().steps.length - 1) state.phase = 'gate';
+        else state.idx += 1;
+        render();
+        return;
+      }
       if (/^[1-9]$/.test(e.key)) {
         const choices = root.querySelectorAll('[data-choices] .tf-choice');
         const target = choices[parseInt(e.key, 10) - 1];
@@ -432,93 +496,101 @@ const config = {
   }
 
   // ===== Variant B — stepper + content pane ===============================
+  // Rail = eligibility, profession, process steps, the gate, then the fee tasks.
+  // Once the gate is passed the fee tasks unlock and are freely jumpable (non-linear).
   function mountB(root) {
-    const state = { eligible: null, slug: null, active: 0 };
-    // Unified item list: 0 = eligibility, 1 = profession, 2.. = steps
+    const state = { eligible: null, slug: null, passedGate: false, gateNo: false, active: 0, done: {} };
+
     function items() {
-      const base = [
-        { key: 'elig', label: 'Eligibility' },
-        { key: 'prof', label: 'Profession' },
-      ];
+      const list = [{ key: 'elig', label: 'Eligibility' }, { key: 'prof', label: 'Profession' }];
       if (state.eligible && state.slug) {
-        buildSteps(profBySlug(state.slug)).forEach((s, i) =>
-          base.push({ key: 'step' + i, label: s.title, step: i })
-        );
+        const f = processFlow(profBySlug(state.slug));
+        f.steps.forEach((s, i) => list.push({ key: 'proc' + i, label: s.title, proc: i }));
+        list.push({ key: 'gate', label: 'Get started' });
+        if (state.passedGate) {
+          feeTasks(profBySlug(state.slug)).forEach((t) => list.push({ key: 'task:' + t.key, label: t.label, task: t.key }));
+          list.push({ key: 'done', label: 'All set' });
+        }
       }
-      return base;
+      return list;
     }
 
-    function paneFor(idx) {
-      const list = items();
-      const it = list[idx];
+    const keyIndex = (key) => items().findIndex((x) => x.key === key);
+    function clickable(it) {
+      if (it.key === 'elig') return true;
+      if (it.key === 'prof') return !!state.eligible;
+      if (it.key === 'gate' || it.proc != null) return !!state.slug;
+      return state.passedGate;
+    }
+    function isDone(it) {
+      if (it.key === 'elig') return !!state.eligible;
+      if (it.key === 'prof') return !!state.slug;
+      if (it.proc != null || it.key === 'gate') return state.passedGate;
+      if (it.task) return !!state.done[it.task];
+      return false;
+    }
+
+    function pane(it) {
+      const p = state.slug ? profBySlug(state.slug) : null;
       if (it.key === 'elig') {
-        return `
-          <h2>Are you an active TEF CPT participant?</h2>
-          <div class="stp-pane-body"><p>${md(CONFIG.eligibilityText)}</p></div>
-          <div class="stp-grid" style="margin-top:var(--space-3)">
-            <button class="proto-btn" data-b="elig-yes">Yes, I'm active</button>
-            <button class="proto-btn ghost" data-b="elig-no">No / not sure</button>
-          </div>`;
+        return `<h2>Are you an active TEF CPT participant?</h2><div class="stp-pane-body"><p>${md(CONFIG.eligibilityText)}</p></div><div class="stp-grid" style="margin-top:var(--space-3)"><button class="proto-btn" data-b="elig-yes">Yes, I'm active</button><button class="proto-btn ghost" data-b="elig-no">No / not sure</button></div>`;
       }
       if (it.key === 'prof') {
-        if (!state.eligible) {
-          return `<h2>Confirm eligibility first</h2><div class="stp-pane-body"><p>${md(CONFIG.contactText)}</p></div>`;
-        }
-        const grid = PROFS.map(
-          (p) =>
-            `<button class="proto-btn ghost" data-b="pick" data-slug="${p.slug}" style="text-align:left">
-              ${esc(p.name)} <span class="proto-badge" data-reg="${p.regulator}">${p.regulator}</span>
-            </button>`
-        ).join('');
-        return `<h2>Pick your profession</h2><div class="stp-pane-body"><p>We'll tailor the remaining steps to it.</p></div><div class="stp-grid" style="margin-top:var(--space-3)">${grid}</div>`;
+        if (!state.eligible) return `<h2>Confirm eligibility first</h2><div class="stp-pane-body"><p>${md(CONFIG.contactText)}</p></div>`;
+        const grid = PROFS.map((pr) => `<button class="proto-btn ghost" data-b="pick" data-slug="${pr.slug}" style="text-align:left">${esc(pr.name)} <span class="proto-badge" data-reg="${pr.regulator}">${pr.regulator}</span></button>`).join('');
+        return `<h2>Pick your profession</h2><div class="stp-pane-body"><p>We'll walk you through how it works, then unlock your fee options.</p></div><div class="stp-grid" style="margin-top:var(--space-3)">${grid}</div>`;
       }
-      const steps = buildSteps(profBySlug(state.slug));
-      const s = steps[it.step];
-      const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
-      const isLast = it.step === steps.length - 1;
-      return `
-        <h2>${esc(s.title)}${reg}</h2>
-        <div class="stp-pane-body">${s.bodyHtml}</div>
-        <div class="stp-pane-nav">
-          <button class="proto-btn ghost" data-b="prev">← Back</button>
-          <button class="proto-btn" data-b="next">${isLast ? 'Finish' : 'Mark done & continue →'}</button>
-        </div>`;
+      if (it.proc != null) {
+        const s = processFlow(p).steps[it.proc];
+        return `<h2>${esc(s.title)} <span class="proto-badge" data-reg="${p.regulator}">${p.regulator}</span></h2><div class="stp-pane-body">${s.bodyHtml}</div><div class="stp-pane-nav"><button class="proto-btn ghost" data-b="prev">← Back</button><button class="proto-btn" data-b="next">Continue →</button></div>`;
+      }
+      if (it.key === 'gate') {
+        const f = processFlow(p);
+        const yes = `<button class="proto-btn" data-b="gate-yes">${esc(f.gateYes)}</button>`;
+        const no = f.gateNo ? `<button class="proto-btn ghost" data-b="gate-no">${esc(f.gateNo)}</button>` : '';
+        const note = state.gateNo && f.gateNoBody ? `<p class="stp-pane-body" style="margin-top:var(--space-2)"><em>${esc(f.gateNoBody)}</em></p>` : '';
+        return `<h2>${esc(f.gateTitle)}</h2><div class="stp-pane-body"><p>${esc(f.gateBody)}</p></div><div class="stp-grid" style="margin-top:var(--space-3)">${yes}${no}</div>${note}`;
+      }
+      if (it.task) {
+        const t = feeTasks(p).find((x) => x.key === it.task);
+        return `<h2>${esc(t.label)}${state.done[it.task] ? ' ✓' : ''}</h2><div class="stp-pane-body">${t.bodyHtml}${checklistHtml(p)}</div><div class="stp-pane-nav"><button class="proto-btn ghost" data-b="prev">← Back</button><button class="proto-btn" data-b="task-done">${state.done[it.task] ? 'Done ✓' : 'Mark done'}</button></div>`;
+      }
+      return `<h2>You're all set</h2><div class="stp-pane-body"><p>${md(CONFIG.contactText)}</p></div>`;
     }
 
     function render() {
       const list = items();
       if (state.active >= list.length) state.active = list.length - 1;
-      const rail = list
-        .map((it, i) => {
-          const cls =
-            i === state.active ? 'is-active' : i < state.active ? 'is-done' : '';
-          const dot = i < state.active ? '✓' : i + 1;
-          return `<li class="stp-step ${cls}" data-b="jump" data-i="${i}"><span class="stp-dot">${dot}</span><span>${esc(it.label)}</span></li>`;
-        })
-        .join('');
+      const rail = list.map((it, i) => {
+        const active = i === state.active;
+        const done = isDone(it) && !active;
+        const lock = !clickable(it);
+        const cls = active ? 'is-active' : done ? 'is-done' : lock ? 'is-locked' : '';
+        const dot = done ? '✓' : it.proc != null ? '•' : it.task ? '•' : i + 1;
+        return `<li class="stp-step ${cls}" data-b="jump" data-key="${it.key}"><span class="stp-dot">${dot}</span><span>${esc(it.label)}</span></li>`;
+      }).join('');
       root.innerHTML = `
         <h1 style="font-size:1.6rem">Licensure & exam fees</h1>
         <div class="stp">
-          <nav class="stp-rail" aria-label="Your progress">
-            <h2>Your path</h2>
-            <ul class="stp-steps">${rail}</ul>
-          </nav>
-          <section class="stp-pane">${paneFor(state.active)}</section>
+          <nav class="stp-rail" aria-label="Your progress"><h2>Your path</h2><ul class="stp-steps">${rail}</ul></nav>
+          <section class="stp-pane">${pane(list[state.active])}</section>
         </div>`;
     }
 
     root.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-b]');
       if (!btn) return;
-      const act = btn.dataset.b;
-      if (act === 'elig-yes') { state.eligible = true; state.active = 1; }
-      else if (act === 'elig-no') { state.eligible = false; }
-      else if (act === 'pick') { state.slug = btn.dataset.slug; state.active = 2; }
-      else if (act === 'next') { state.active += 1; }
-      else if (act === 'prev') { state.active = Math.max(0, state.active - 1); }
-      else if (act === 'jump') {
-        const i = parseInt(btn.dataset.i, 10);
-        if (i <= state.active) state.active = i; // only jump to current/completed
+      const cur = items()[state.active];
+      switch (btn.dataset.b) {
+        case 'elig-yes': state.eligible = true; state.active = keyIndex('prof'); break;
+        case 'elig-no': state.eligible = false; break;
+        case 'pick': state.slug = btn.dataset.slug; state.passedGate = false; state.gateNo = false; state.done = {}; state.active = keyIndex('proc0'); break;
+        case 'next': state.active = Math.min(state.active + 1, items().length - 1); break;
+        case 'prev': state.active = Math.max(0, state.active - 1); break;
+        case 'gate-yes': { state.passedGate = true; state.gateNo = false; const fi = items().findIndex((x) => x.task); if (fi >= 0) state.active = fi; break; }
+        case 'gate-no': state.gateNo = true; break;
+        case 'task-done': if (cur && cur.task) state.done[cur.task] = true; break;
+        case 'jump': { const i = keyIndex(btn.dataset.key); const it = items()[i]; if (i >= 0 && clickable(it)) state.active = i; break; }
       }
       render();
     });
@@ -536,7 +608,7 @@ const config = {
       </div>`;
     const log = root.querySelector('#chat-log');
     const chips = root.querySelector('#chat-chips');
-    const state = { slug: null, idx: 0 };
+    const state = { slug: null, done: {} };
 
     function scroll() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
     function bot(html) {
@@ -567,31 +639,54 @@ const config = {
 
     function askProfession() {
       bot('Great. Which credential are you pursuing?');
-      setChips(
-        PROFS.map((p) => ({
-          label: p.name,
-          onClick: () => { state.slug = p.slug; state.idx = 0; bot(`Here's your path for <strong>${esc(p.name)}</strong>.`); nextStep(); },
-        }))
-      );
+      setChips(PROFS.map((p) => ({ label: p.name, onClick: () => { state.slug = p.slug; walkProcess(); } })));
     }
 
-    function nextStep() {
-      const steps = buildSteps(profBySlug(state.slug));
-      const s = steps[state.idx];
-      const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
-      bot(`<strong>Step ${state.idx + 1}/${steps.length}: ${esc(s.title)}</strong>${reg}<br><br>${s.bodyHtml}`);
-      if (s.done) {
-        setChips([{ label: 'Start over', onClick: () => { state.slug = null; state.idx = 0; start(); } }]);
-      } else {
-        setChips([
-          { label: 'Got it, next →', onClick: () => { state.idx += 1; nextStep(); } },
-        ]);
+    function walkProcess() {
+      const p = profBySlug(state.slug);
+      const f = processFlow(p);
+      bot(`Here's how it works for <strong>${esc(p.name)}</strong> <span class="proto-badge" data-reg="${p.regulator}">${p.regulator}</span>:`);
+      f.steps.forEach((s, i) => bot(`<strong>${i + 1}. ${esc(s.title)}</strong><br>${s.bodyHtml}`));
+      bot(`<strong>${esc(f.gateTitle)}</strong><br>${esc(f.gateBody)}`);
+      const opts = [{ label: f.gateYes, onClick: openHub }];
+      if (f.gateNo) {
+        opts.push({
+          label: f.gateNo,
+          onClick: () => {
+            bot(f.gateNoBody);
+            setChips([{ label: "OK, it's notarized now", onClick: openHub }, { label: 'Start over', onClick: start }]);
+          },
+        });
       }
+      setChips(opts);
+    }
+
+    function openHub() {
+      const p = profBySlug(state.slug);
+      const remaining = feeTasks(p).filter((t) => !state.done[t.key]);
+      if (!remaining.length) {
+        bot("You're all set. " + md(CONFIG.contactText));
+        setChips([{ label: 'Start over', onClick: start }]);
+        return;
+      }
+      bot('What do you need to pay for?');
+      const opts = remaining.map((t) => ({
+        label: t.label,
+        onClick: () => {
+          bot(`<strong>${esc(t.label)}</strong><br>${t.bodyHtml}${checklistHtml(p)}`);
+          state.done[t.key] = true;
+          setChips([{ label: 'Done — what else?', onClick: openHub }]);
+        },
+      }));
+      opts.push({ label: "That's everything", onClick: () => { bot("Great, you're all set. " + md(CONFIG.contactText)); setChips([{ label: 'Start over', onClick: start }]); } });
+      setChips(opts);
     }
 
     function start() {
       log.innerHTML = '';
-      bot("Hi! I'll walk you through your licensure & exam fee steps. First: " + md(CONFIG.eligibilityText));
+      state.slug = null;
+      state.done = {};
+      bot("Hi! I'll point you to the right licensure or exam fee steps. First — " + md(CONFIG.eligibilityText));
       bot('Are you an active 1199SEIU TEF CPT participant?');
       setChips([
         { label: "Yes, I'm active", onClick: askProfession },
