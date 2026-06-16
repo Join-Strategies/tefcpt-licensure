@@ -1,0 +1,628 @@
+---
+// THROWAWAY PROTOTYPE — guided / Typeform-style redesign of the licensure page.
+// Three structurally-different guided UIs over one shared flow, switchable via ?variant=.
+// See src/components/prototype/NOTES.md for the question this is answering.
+// Do NOT promote this file as-is; fold the winning variant into the real page and delete the rest.
+import { getCollection, getEntry } from 'astro:content';
+import Page from '../layouts/Page.astro';
+import PrototypeSwitcher from '../components/prototype/PrototypeSwitcher.astro';
+
+const base = import.meta.env.BASE_URL;
+
+function feeKind(f) {
+  if (!f) return { kind: 'none', notes: null };
+  if (f.asanaFormUrl) return { kind: 'asana', notes: f.notes ?? null };
+  if (f.walkInOnly) return { kind: 'walkin', notes: f.notes ?? null };
+  return { kind: 'none', notes: f.notes ?? null };
+}
+
+const professions = (await getCollection('professions')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const profData = professions.map((p) => {
+  const d = p.data;
+  const checklists =
+    d.checklistUrls && d.checklistUrls.length
+      ? d.checklistUrls
+      : d.checklistUrl
+        ? [{ url: d.checklistUrl, label: 'NYSED' }]
+        : [];
+  return {
+    slug: p.slug,
+    name: d.name,
+    regulator: d.regulator,
+    intro: p.body.trim(),
+    form1Pdf: d.form1Pdf ? `${base}${d.form1Pdf.replace(/^\//, '')}` : null,
+    form1Revision: d.form1Revision,
+    checklists,
+    licensure: feeKind(d.licensureFee),
+    exam: feeKind(d.examFee),
+  };
+});
+
+const eligibility = await getEntry('page', 'eligibility');
+const contact = await getEntry('page', 'contact');
+
+const config = {
+  eligibilityText: eligibility?.body.trim() ?? '',
+  contactText: contact?.body.trim() ?? '',
+};
+---
+<Page
+  title="Licensure & Exam Fees — Guided Prototype"
+  description="Throwaway prototype: guided licensure & exam fee flow."
+>
+  <script type="application/json" id="proto-data" set:html={JSON.stringify(profData)} />
+  <script type="application/json" id="proto-config" set:html={JSON.stringify(config)} />
+
+  <div id="variant-A" class="proto-variant" hidden></div>
+  <div id="variant-B" class="proto-variant" hidden></div>
+  <div id="variant-C" class="proto-variant" hidden></div>
+
+  <PrototypeSwitcher />
+</Page>
+
+<style is:global>
+  /* THROWAWAY prototype styles. Not in the shared public/styles.css. */
+  body { background: var(--color-soft-bg); }
+  .page { max-width: 1100px; }
+  .proto-variant[hidden] { display: none; }
+
+  .proto-btn {
+    appearance: none;
+    border: none;
+    border-radius: 8px;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.7rem 1.2rem;
+    cursor: pointer;
+  }
+  .proto-btn:hover { background: var(--color-accent-hover); }
+  .proto-btn.ghost {
+    background: transparent;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+  }
+  .proto-btn.ghost:hover { background: #eef3f8; color: var(--color-accent-hover); }
+
+  .proto-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .proto-badge[data-reg="NYSED"] { background: var(--color-nysed); }
+  .proto-badge[data-reg="OASAS"] { background: var(--color-oasas); }
+  .proto-badge[data-reg="AAMA"] { background: var(--color-aama); }
+
+  .proto-stub {
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    padding: var(--space-2);
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    margin: var(--space-2) 0;
+  }
+  .proto-stub .proto-stub-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: #fde68a;
+    color: #7a5b00;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- Variant A: full-screen Typeform ---------- */
+  .tf {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  .tf-progress { height: 4px; background: #e6ebf1; }
+  .tf-progress-bar { height: 100%; background: var(--color-accent); transition: width 0.25s ease; }
+  .tf-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-3);
+  }
+  .tf-kicker { color: var(--color-muted); font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: var(--space-1); }
+  .tf-stage h2 { font-size: 1.8rem; line-height: 1.2; margin-bottom: var(--space-2); }
+  .tf-stage .tf-body { color: var(--color-muted); font-size: 1.05rem; margin-bottom: var(--space-3); }
+  .tf-choices { display: flex; flex-direction: column; gap: var(--space-1); }
+  .tf-choice {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    font-size: 1.05rem;
+    cursor: pointer;
+  }
+  .tf-choice:hover, .tf-choice:focus-visible { border-color: var(--color-accent); background: #f3f8fd; outline: none; }
+  .tf-choice .tf-key {
+    flex: none;
+    width: 26px; height: 26px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    font-size: 0.8rem; font-weight: 600; color: var(--color-muted);
+  }
+  .tf-nav { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-top: var(--space-4); }
+  .tf-hint { color: var(--color-muted); font-size: 0.8rem; }
+
+  /* ---------- Variant B: stepper + content pane ---------- */
+  .stp { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-4); margin-top: var(--space-3); align-items: start; }
+  .stp-rail { position: sticky; top: var(--space-3); }
+  .stp-rail h2 { font-size: 1.1rem; }
+  .stp-steps { list-style: none; margin: 0; padding: 0; }
+  .stp-step {
+    display: flex; gap: var(--space-2); align-items: flex-start;
+    padding: 0.6rem 0; cursor: pointer; color: var(--color-muted);
+    border-left: 2px solid transparent; padding-left: var(--space-2);
+  }
+  .stp-step .stp-dot {
+    flex: none; width: 22px; height: 22px; border-radius: 999px;
+    border: 2px solid var(--color-border); display: grid; place-items: center;
+    font-size: 0.75rem; font-weight: 700; background: #fff;
+  }
+  .stp-step.is-active { color: var(--color-text); font-weight: 600; border-left-color: var(--color-accent); }
+  .stp-step.is-active .stp-dot { border-color: var(--color-accent); color: var(--color-accent); }
+  .stp-step.is-done { color: var(--color-text); cursor: pointer; }
+  .stp-step.is-done .stp-dot { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+  .stp-step.is-locked { opacity: 0.5; cursor: default; }
+  .stp-pane {
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: var(--radius); padding: var(--space-4); min-height: 360px;
+  }
+  .stp-pane h2 { font-size: 1.5rem; }
+  .stp-pane-body { color: var(--color-text); font-size: 1rem; }
+  .stp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: var(--space-2); }
+  .stp-pane-nav { display: flex; justify-content: space-between; margin-top: var(--space-4); }
+
+  /* ---------- Variant C: conversational ---------- */
+  .chat { max-width: 680px; margin: var(--space-3) auto 0; }
+  .chat-log { display: flex; flex-direction: column; gap: var(--space-2); padding-bottom: var(--space-3); }
+  .chat-msg { max-width: 80%; padding: 0.7rem 1rem; border-radius: 14px; font-size: 1rem; line-height: 1.45; }
+  .chat-msg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--color-border); border-bottom-left-radius: 4px; }
+  .chat-msg.user { align-self: flex-end; background: var(--color-accent); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-msg.user a { color: #fff; }
+  .chat-chips {
+    position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: var(--space-1);
+    padding: var(--space-2) 0; background: linear-gradient(to top, var(--color-soft-bg) 70%, transparent);
+  }
+  .chat-chip {
+    appearance: none; border: 1px solid var(--color-accent); background: #fff; color: var(--color-accent);
+    border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  }
+  .chat-chip:hover { background: var(--color-accent); color: #fff; }
+  .chat-typing { align-self: flex-start; color: var(--color-muted); font-size: 0.85rem; font-style: italic; }
+
+  /* ---------- Switcher ---------- */
+  .proto-switcher {
+    position: fixed; z-index: 50; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 6px;
+    background: #111; color: #fff; border-radius: 999px;
+    padding: 6px 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+    font-size: 0.85rem;
+  }
+  .proto-switcher-label { padding: 0 10px; white-space: nowrap; }
+  .proto-switcher-arrow {
+    appearance: none; border: none; background: #2a2a2a; color: #fff;
+    width: 30px; height: 30px; border-radius: 999px; font-size: 1.1rem; cursor: pointer; line-height: 1;
+  }
+  .proto-switcher-arrow:hover { background: #3d3d3d; }
+
+  @media (max-width: 760px) {
+    .stp { grid-template-columns: 1fr; }
+    .stp-rail { position: static; }
+  }
+</style>
+
+<script>
+  // ===== Shared model =====================================================
+  const PROFS = JSON.parse(document.getElementById('proto-data').textContent);
+  const CONFIG = JSON.parse(document.getElementById('proto-config').textContent);
+
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function md(s) {
+    return esc(s)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/\n{2,}/g, '<br><br>');
+  }
+  const profBySlug = (slug) => PROFS.find((p) => p.slug === slug);
+
+  const stub = (label) =>
+    `<div class="proto-stub"><span class="proto-stub-tag">Prototype stub</span>` +
+    `<div>${esc(label)} — the live form/PDF is wired up in the real page; here it's a placeholder.</div></div>`;
+
+  // Build the ordered guided steps for a profession from its data.
+  function buildSteps(p) {
+    const steps = [];
+    steps.push({
+      title: p.name,
+      regulator: p.regulator,
+      bodyHtml: md(p.intro),
+    });
+    if (p.form1Pdf) {
+      const rev = p.form1Revision ? ` <em>(${esc(p.form1Revision)})</em>` : '';
+      steps.push({
+        title: 'Download & complete Form 1',
+        bodyHtml: `Download Form 1 for your profession and fill it out.${rev}` + stub('Download Form 1 (PDF)'),
+      });
+      steps.push({
+        title: 'Get Form 1 notarized',
+        bodyHtml: 'New York State requires Form 1 to be <strong>notarized</strong> before you submit it to TEF.',
+      });
+    }
+    if (p.licensure.kind === 'asana') {
+      steps.push({
+        title: 'Submit your licensure fee request',
+        bodyHtml:
+          (p.licensure.notes ? md(p.licensure.notes) : 'TEF will pay your licensure / application fee. Submit the request to get started.') +
+          stub('Open licensure fee request form'),
+      });
+    } else if (p.licensure.kind === 'walkin') {
+      steps.push({
+        title: 'Licensure fee — handled walk-in',
+        bodyHtml: md(p.licensure.notes || 'Handled walk-in. Contact career services for next steps.'),
+      });
+    }
+    if (p.exam.kind === 'asana') {
+      steps.push({
+        title: 'Submit your exam fee request',
+        bodyHtml:
+          (p.exam.notes ? md(p.exam.notes) : 'TEF can cover your exam fee. Submit the request to get started.') +
+          stub('Open exam fee request form'),
+      });
+    } else if (p.exam.kind === 'walkin') {
+      steps.push({
+        title: 'Exam fee — handled walk-in',
+        bodyHtml: md(p.exam.notes || 'Handled walk-in. Contact career services for next steps.'),
+      });
+    }
+    if (p.checklists.length) {
+      const links = p.checklists
+        .map((c) => `<a href="${c.url}" target="_blank" rel="noopener">Official NYSED checklist (${esc(c.label)}) &#8599;</a>`)
+        .join('<br>');
+      steps.push({ title: 'Review the official NYSED checklist', bodyHtml: links });
+    }
+    steps.push({
+      title: "You're all set",
+      bodyHtml: `That covers the steps for <strong>${esc(p.name)}</strong>.<br><br>${md(CONFIG.contactText)}`,
+      done: true,
+    });
+    return steps;
+  }
+
+  // ===== Variant A — full-screen Typeform =================================
+  function mountA(root) {
+    const state = { phase: 'eligibility', slug: null, idx: 0 };
+
+    function totalForProgress() {
+      // eligibility + profession + steps
+      if (!state.slug) return 2;
+      return 2 + buildSteps(profBySlug(state.slug)).length;
+    }
+    function progressIndex() {
+      if (state.phase === 'eligibility' || state.phase === 'ineligible') return 0;
+      if (state.phase === 'profession') return 1;
+      return 2 + state.idx;
+    }
+
+    function render() {
+      const pct = Math.round((progressIndex() / Math.max(1, totalForProgress() - 1)) * 100);
+      let stage = '';
+
+      if (state.phase === 'eligibility') {
+        stage = `
+          <p class="tf-kicker">Before we start</p>
+          <h2>Are you an active 1199SEIU TEF CPT participant?</h2>
+          <p class="tf-body">${md(CONFIG.eligibilityText)}</p>
+          <div class="tf-choices" data-choices>
+            <button class="tf-choice" data-act="yes"><span class="tf-key">1</span> Yes, I'm an active participant</button>
+            <button class="tf-choice" data-act="no"><span class="tf-key">2</span> No / I'm not sure</button>
+          </div>`;
+      } else if (state.phase === 'ineligible') {
+        stage = `
+          <p class="tf-kicker">Hold on</p>
+          <h2>Let's confirm your eligibility first</h2>
+          <p class="tf-body">${md(CONFIG.contactText)}</p>
+          <div class="tf-nav"><button class="proto-btn ghost" data-act="back">← Back</button></div>`;
+      } else if (state.phase === 'profession') {
+        const choices = PROFS.map(
+          (p, i) =>
+            `<button class="tf-choice" data-act="pick" data-slug="${p.slug}">
+              <span class="tf-key">${i + 1}</span>
+              <span>${esc(p.name)}</span>
+              <span class="proto-badge" data-reg="${p.regulator}" style="margin-left:auto">${p.regulator}</span>
+            </button>`
+        ).join('');
+        stage = `
+          <p class="tf-kicker">Step 1</p>
+          <h2>What are you pursuing?</h2>
+          <p class="tf-body">Pick your profession and we'll show only the steps that apply to you.</p>
+          <div class="tf-choices" data-choices>${choices}</div>`;
+      } else {
+        const steps = buildSteps(profBySlug(state.slug));
+        const s = steps[state.idx];
+        const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
+        stage = `
+          <p class="tf-kicker">Step ${state.idx + 1} of ${steps.length}</p>
+          <h2>${esc(s.title)}${reg}</h2>
+          <div class="tf-body">${s.bodyHtml}</div>
+          <div class="tf-nav">
+            <button class="proto-btn ghost" data-act="prev">← Back</button>
+            <span class="tf-hint">Press <strong>Enter</strong> to continue</span>
+            <button class="proto-btn" data-act="next">${s.done ? 'Start over' : 'Continue →'}</button>
+          </div>`;
+      }
+
+      root.innerHTML = `
+        <div class="tf">
+          <div class="tf-progress"><div class="tf-progress-bar" style="width:${pct}%"></div></div>
+          <div class="tf-stage">${stage}</div>
+        </div>`;
+    }
+
+    function advance() {
+      const steps = buildSteps(profBySlug(state.slug));
+      if (steps[state.idx].done) {
+        state.phase = 'eligibility'; state.slug = null; state.idx = 0;
+      } else {
+        state.idx = Math.min(state.idx + 1, steps.length - 1);
+      }
+      render();
+    }
+
+    root.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const act = btn.dataset.act;
+      if (act === 'yes') { state.phase = 'profession'; }
+      else if (act === 'no') { state.phase = 'ineligible'; }
+      else if (act === 'back') { state.phase = 'eligibility'; }
+      else if (act === 'pick') { state.slug = btn.dataset.slug; state.phase = 'steps'; state.idx = 0; }
+      else if (act === 'next') { advance(); return; }
+      else if (act === 'prev') {
+        if (state.idx === 0) { state.phase = 'profession'; state.slug = null; }
+        else state.idx -= 1;
+      }
+      render();
+    });
+
+    const keyHandler = (e) => {
+      if (root.hidden) return;
+      const a = document.activeElement;
+      if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return;
+      if (e.key === 'Enter' && state.phase === 'steps') { advance(); return; }
+      if (/^[1-9]$/.test(e.key)) {
+        const choices = root.querySelectorAll('[data-choices] .tf-choice');
+        const target = choices[parseInt(e.key, 10) - 1];
+        if (target) target.click();
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+    root._cleanup = () => document.removeEventListener('keydown', keyHandler);
+
+    render();
+  }
+
+  // ===== Variant B — stepper + content pane ===============================
+  function mountB(root) {
+    const state = { eligible: null, slug: null, active: 0 };
+    // Unified item list: 0 = eligibility, 1 = profession, 2.. = steps
+    function items() {
+      const base = [
+        { key: 'elig', label: 'Eligibility' },
+        { key: 'prof', label: 'Profession' },
+      ];
+      if (state.eligible && state.slug) {
+        buildSteps(profBySlug(state.slug)).forEach((s, i) =>
+          base.push({ key: 'step' + i, label: s.title, step: i })
+        );
+      }
+      return base;
+    }
+
+    function paneFor(idx) {
+      const list = items();
+      const it = list[idx];
+      if (it.key === 'elig') {
+        return `
+          <h2>Are you an active TEF CPT participant?</h2>
+          <div class="stp-pane-body"><p>${md(CONFIG.eligibilityText)}</p></div>
+          <div class="stp-grid" style="margin-top:var(--space-3)">
+            <button class="proto-btn" data-b="elig-yes">Yes, I'm active</button>
+            <button class="proto-btn ghost" data-b="elig-no">No / not sure</button>
+          </div>`;
+      }
+      if (it.key === 'prof') {
+        if (!state.eligible) {
+          return `<h2>Confirm eligibility first</h2><div class="stp-pane-body"><p>${md(CONFIG.contactText)}</p></div>`;
+        }
+        const grid = PROFS.map(
+          (p) =>
+            `<button class="proto-btn ghost" data-b="pick" data-slug="${p.slug}" style="text-align:left">
+              ${esc(p.name)} <span class="proto-badge" data-reg="${p.regulator}">${p.regulator}</span>
+            </button>`
+        ).join('');
+        return `<h2>Pick your profession</h2><div class="stp-pane-body"><p>We'll tailor the remaining steps to it.</p></div><div class="stp-grid" style="margin-top:var(--space-3)">${grid}</div>`;
+      }
+      const steps = buildSteps(profBySlug(state.slug));
+      const s = steps[it.step];
+      const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
+      const isLast = it.step === steps.length - 1;
+      return `
+        <h2>${esc(s.title)}${reg}</h2>
+        <div class="stp-pane-body">${s.bodyHtml}</div>
+        <div class="stp-pane-nav">
+          <button class="proto-btn ghost" data-b="prev">← Back</button>
+          <button class="proto-btn" data-b="next">${isLast ? 'Finish' : 'Mark done & continue →'}</button>
+        </div>`;
+    }
+
+    function render() {
+      const list = items();
+      if (state.active >= list.length) state.active = list.length - 1;
+      const rail = list
+        .map((it, i) => {
+          const cls =
+            i === state.active ? 'is-active' : i < state.active ? 'is-done' : '';
+          const dot = i < state.active ? '✓' : i + 1;
+          return `<li class="stp-step ${cls}" data-b="jump" data-i="${i}"><span class="stp-dot">${dot}</span><span>${esc(it.label)}</span></li>`;
+        })
+        .join('');
+      root.innerHTML = `
+        <h1 style="font-size:1.6rem">Licensure & exam fees</h1>
+        <div class="stp">
+          <nav class="stp-rail" aria-label="Your progress">
+            <h2>Your path</h2>
+            <ul class="stp-steps">${rail}</ul>
+          </nav>
+          <section class="stp-pane">${paneFor(state.active)}</section>
+        </div>`;
+    }
+
+    root.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-b]');
+      if (!btn) return;
+      const act = btn.dataset.b;
+      if (act === 'elig-yes') { state.eligible = true; state.active = 1; }
+      else if (act === 'elig-no') { state.eligible = false; }
+      else if (act === 'pick') { state.slug = btn.dataset.slug; state.active = 2; }
+      else if (act === 'next') { state.active += 1; }
+      else if (act === 'prev') { state.active = Math.max(0, state.active - 1); }
+      else if (act === 'jump') {
+        const i = parseInt(btn.dataset.i, 10);
+        if (i <= state.active) state.active = i; // only jump to current/completed
+      }
+      render();
+    });
+
+    render();
+  }
+
+  // ===== Variant C — conversational =======================================
+  function mountC(root) {
+    root.innerHTML = `
+      <h1 style="font-size:1.5rem;text-align:center">Licensure & exam fees</h1>
+      <div class="chat">
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-chips" id="chat-chips"></div>
+      </div>`;
+    const log = root.querySelector('#chat-log');
+    const chips = root.querySelector('#chat-chips');
+    const state = { slug: null, idx: 0 };
+
+    function scroll() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
+    function bot(html) {
+      const d = document.createElement('div');
+      d.className = 'chat-msg bot';
+      d.innerHTML = html;
+      log.appendChild(d);
+      scroll();
+    }
+    function user(text) {
+      const d = document.createElement('div');
+      d.className = 'chat-msg user';
+      d.textContent = text;
+      log.appendChild(d);
+      scroll();
+    }
+    function setChips(opts) {
+      chips.innerHTML = '';
+      opts.forEach((o) => {
+        const b = document.createElement('button');
+        b.className = 'chat-chip';
+        b.textContent = o.label;
+        b.addEventListener('click', () => { user(o.label); chips.innerHTML = ''; o.onClick(); });
+        chips.appendChild(b);
+      });
+      scroll();
+    }
+
+    function askProfession() {
+      bot('Great. Which credential are you pursuing?');
+      setChips(
+        PROFS.map((p) => ({
+          label: p.name,
+          onClick: () => { state.slug = p.slug; state.idx = 0; bot(`Here's your path for <strong>${esc(p.name)}</strong>.`); nextStep(); },
+        }))
+      );
+    }
+
+    function nextStep() {
+      const steps = buildSteps(profBySlug(state.slug));
+      const s = steps[state.idx];
+      const reg = s.regulator ? ` <span class="proto-badge" data-reg="${s.regulator}">${s.regulator}</span>` : '';
+      bot(`<strong>Step ${state.idx + 1}/${steps.length}: ${esc(s.title)}</strong>${reg}<br><br>${s.bodyHtml}`);
+      if (s.done) {
+        setChips([{ label: 'Start over', onClick: () => { state.slug = null; state.idx = 0; start(); } }]);
+      } else {
+        setChips([
+          { label: 'Got it, next →', onClick: () => { state.idx += 1; nextStep(); } },
+        ]);
+      }
+    }
+
+    function start() {
+      log.innerHTML = '';
+      bot("Hi! I'll walk you through your licensure & exam fee steps. First: " + md(CONFIG.eligibilityText));
+      bot('Are you an active 1199SEIU TEF CPT participant?');
+      setChips([
+        { label: "Yes, I'm active", onClick: askProfession },
+        { label: 'No / not sure', onClick: () => { bot(md(CONFIG.contactText)); setChips([{ label: 'Start over', onClick: start }]); } },
+      ]);
+    }
+
+    start();
+  }
+
+  // ===== Wiring ===========================================================
+  const MOUNTERS = { A: mountA, B: mountB, C: mountC };
+  const containers = { A: document.getElementById('variant-A'), B: document.getElementById('variant-B'), C: document.getElementById('variant-C') };
+
+  function mount(key) {
+    const root = containers[key];
+    if (!root) return;
+    if (root._cleanup) { root._cleanup(); root._cleanup = null; }
+    root.innerHTML = '';
+    MOUNTERS[key](root);
+  }
+
+  window.protoSetVariant = function (key) {
+    if (!containers[key]) key = 'A';
+    const url = new URL(location.href);
+    url.searchParams.set('variant', key);
+    history.replaceState({}, '', url);
+    Object.keys(containers).forEach((k) => { containers[k].hidden = k !== key; });
+    mount(key);
+  };
+
+  const initial = new URLSearchParams(location.search).get('variant');
+  window.protoSetVariant(MOUNTERS[initial] ? initial : 'A');
+</script>
