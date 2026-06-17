@@ -31,7 +31,25 @@ const pageCollection = defineCollection({
   }),
 });
 
+const processStepSchema = z.object({
+  title: z.string(),
+  mode: z.enum(['on-page', 'offline']),
+  body: z.string(),
+});
+
+const processCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    regulator: z.enum(['NYSED', 'OASAS', 'AAMA']),
+    prepHeading: z.string().optional(),
+    submitHeading: z.string(),
+    submitIntro: z.string().optional(),
+    prepSteps: z.array(processStepSchema).default([]),
+  }),
+});
+
 export const collections = {
   professions: professionCollection,
   page: pageCollection,
+  processes: processCollection,
 };
