@@ -181,6 +181,8 @@
     let rail = '';
     let lastGroup = null;
     let n = 0;
+    let activeNum = 0;
+    let activeLabel = '';
     list.forEach((it) => {
       if (it.groupLabel && it.groupLabel !== lastGroup) {
         rail += `<li class="lf-group">${esc(it.groupLabel)}</li>`;
@@ -194,6 +196,10 @@
       const lock = !clickable(it);
       const cls = isActive ? 'is-active' : done ? 'is-done' : lock ? 'is-locked' : '';
       const dot = done ? '&check;' : n;
+      if (isActive) {
+        activeNum = n;
+        activeLabel = it.label;
+      }
       rail += `<li class="lf-step ${cls}" data-act="jump" data-key="${it.key}">
         <span class="lf-dot">${dot}</span><span class="lf-step-label">${esc(it.label)}</span></li>`;
     });
@@ -203,6 +209,7 @@
         <nav class="lf-rail" aria-label="Your progress">
           <h2 class="lf-rail-title">Your path</h2>
           <ul class="lf-steps">${rail}</ul>
+          <p class="lf-active-label">Step ${activeNum} of ${n} &middot; ${esc(activeLabel)}</p>
         </nav>
         <section class="lf-pane" aria-live="polite">${pane(active)}</section>
       </div>`;

@@ -272,6 +272,7 @@ a:hover { color: var(--color-accent-hover); }
 .lf-step.is-done { color: var(--color-text); }
 .lf-step.is-done .lf-dot { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
 .lf-step.is-locked { opacity: 0.5; cursor: default; }
+.lf-active-label { display: none; }
 
 .lf-pane {
   background: #fff;
@@ -396,5 +397,31 @@ a:hover { color: var(--color-accent-hover); }
 
 @media (max-width: 760px) {
   .lf { grid-template-columns: 1fr; }
-  .lf-rail { position: static; }
+  .lf-rail {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--color-bg);
+    padding: var(--space-1) 0 var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .lf-rail-title { display: none; }
+  .lf-group { display: none; }
+  .lf-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+  }
+  .lf-step {
+    padding: 0;
+    border-left: none;
+  }
+  .lf-step-label { display: none; }
+  .lf-active-label {
+    display: block;
+    margin: var(--space-1) 0 0;
+    font-weight: 600;
+    color: var(--color-text);
+  }
 }
