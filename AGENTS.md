@@ -10,15 +10,37 @@ Participant-facing page on tefcpt.org that consolidates NYSED licensure, OASAS C
 ## Tech stack
 
 - Astro 5+ for the prototype/design layer (`src/`).
-- Plain CSS (`public/styles.css`).
-- ACF for WP integration (`wp/acf-field-group.json`).
-- Custom Gutenberg block server-renders the WP page (`wp/gutenberg-block/render.php`).
+- Plain CSS (`public/styles.css`) — brand-aligned tokens (maroon/gold, Poppins/Roboto). **Edit here first**, then copy to `plugin/assets/styles.css` before deploying.
+- WP plugin in `plugin/` — registers the `tefcpt/licensure-page` Gutenberg block, enqueues assets page-scoped to the `page-licensure.php` template, and loads the ACF field group. Mirrors the career-services plugin shape.
+- `plugin/assets/styles.css` and `plugin/assets/licensure-flow.js` are deploy copies of `public/styles.css` and `public/licensure-flow.js`. Keep them in sync.
+- ACF field group at `wp/acf-field-group.json` (canonical) and `plugin/gutenberg-block/acf-field-group.json` (deploy copy — keep in sync). Gated on `page_template == page-licensure.php`.
+- `wp/` folder contains the superseded standalone block scaffold — retained for reference, superseded by `plugin/`.
 - Node scripts in `scripts/` for PDF refresh and live-page verification.
+
+## WPEngine staging
+
+- **URL:** https://tefcpt.wpenginepowered.com/
+- **SSH:** `tefcpt@tefcpt.ssh.wpengine.net` with `~/.ssh/wpengine_ed25519`; WP root `/home/wpe-user/sites/tefcpt/`
+- **Plugin path:** `~/sites/tefcpt/wp-content/plugins/tefcpt-licensure-page/`
+
+Deploy plugin to staging (bump version in `tefcpt-licensure-page.php` + both enqueue calls first; copy assets from `public/` before running):
+
+```bash
+cp public/styles.css plugin/assets/styles.css
+cp public/licensure-flow.js plugin/assets/licensure-flow.js
+rsync -avz --delete -e "ssh -i ~/.ssh/wpengine_ed25519" \
+  /Users/pete/Code/tefcpt-licensure-page/plugin/ \
+  tefcpt@tefcpt.ssh.wpengine.net:~/sites/tefcpt/wp-content/plugins/tefcpt-licensure-page/
+ssh -i ~/.ssh/wpengine_ed25519 tefcpt@tefcpt.ssh.wpengine.net \
+  "cd /home/wpe-user/sites/tefcpt && wp page-cache flush && wp cdn-cache flush"
+```
+
+**Flush caches after every deploy** — WPEngine serves full-page cache to anonymous users; logged-in admins bypass it, which is why an admin sees updates but incognito does not. Also bump the version string on each asset-changing deploy.
 
 ## Working principles
 
 - **Content is portable.** Per-profession data lives in Markdown frontmatter with a Zod-validated schema. Keep it that way so a future migration to a microsite OR plugin doesn't require rewriting content.
-- **Asana form delivery is abstracted.** All form rendering goes through `AsanaFormEmbed.astro` (Astro) or the modal markup in `render.php` (WP). MVP is iframe; future swap to native Asana API stays inside that component contract.
+- **Asana form delivery is abstracted.** All form rendering goes through the inline embed in `licensure-flow.js`. The iframe src is set from ACF data — no hard-coded URLs in markup. Future swap to native Asana API stays inside that contract.
 - **Class names match between Astro and WP.** `public/styles.css` is consumed by both the Astro prototype and the WP page. Don't fork the styles.
 - **No PII in this repo.** This page does not collect or hold participant data — submissions go directly to Asana. If that changes, requirements escalate (encryption, secure storage, etc.) and the WS3 plugin spec applies.
 

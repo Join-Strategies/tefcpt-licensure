@@ -28,6 +28,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -58,45 +59,8 @@ function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!match) throw new Error('Missing frontmatter');
   const [, fm, body] = match;
-  const data = parseYaml(fm);
+  const data = yaml.load(fm);
   return { data, body: body.trim() };
-}
-
-function parseYaml(yaml) {
-  const out = {};
-  const lines = yaml.split('\n');
-  let currentKey = null;
-  let nested = null;
-  for (const line of lines) {
-    if (!line.trim() || line.trim().startsWith('#')) continue;
-    if (line.startsWith('  ') && nested) {
-      const m = line.match(/^\s{2}(\w+):\s*(.*)$/);
-      if (m) nested[m[1]] = coerceYamlValue(m[2]);
-      continue;
-    }
-    const m = line.match(/^(\w+):\s*(.*)$/);
-    if (!m) continue;
-    const [, key, val] = m;
-    if (val === '') {
-      nested = {};
-      out[key] = nested;
-      currentKey = key;
-    } else {
-      out[key] = coerceYamlValue(val);
-      nested = null;
-      currentKey = key;
-    }
-  }
-  return out;
-}
-
-function coerceYamlValue(v) {
-  const s = v.trim();
-  if (s === 'null') return null;
-  if (s === 'true') return true;
-  if (s === 'false') return false;
-  if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
-  return s.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
 }
 
 async function loadProfessions() {
@@ -144,13 +108,20 @@ async function uploadPdfIfNeeded(localPath) {
 }
 
 function mapProfessionToAcf(p, pdfUrlByPath) {
+  // Normalise checklist entries: prefer checklistUrls array, fall back to single checklistUrl.
+  const checklists = p.checklistUrls?.length
+    ? p.checklistUrls
+    : p.checklistUrl
+      ? [{ url: p.checklistUrl, label: 'NYSED' }]
+      : [];
+
   return {
     name: p.name,
     slug: p.slug,
     regulator: p.regulator,
     form1_pdf: p.form1Pdf ? pdfUrlByPath.get(p.form1Pdf) ?? '' : '',
     form1_revision: p.form1Revision ?? '',
-    checklist_url: p.checklistUrl ?? '',
+    checklist_urls: checklists.map((c) => ({ url: c.url, label: c.label })),
     licensure_asana_url: p.licensureFee?.asanaFormUrl ?? '',
     licensure_walk_in_only: !!p.licensureFee?.walkInOnly,
     licensure_notes: p.licensureFee?.notes ?? '',
