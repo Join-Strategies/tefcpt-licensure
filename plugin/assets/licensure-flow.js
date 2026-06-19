@@ -63,20 +63,24 @@
     return tasks;
   }
 
-  const state = { eligible: null, slug: null, activeKey: 'elig', done: {} };
+  const state = { eligible: null, slug: null, activeKey: 'elig', done: {}, form1Already: null };
 
   // ---- Item model (the rail) --------------------------------------------
   function items() {
     const list = [
-      { key: 'elig', label: 'Eligibility', kind: 'elig' },
+      { key: 'elig', label: 'Get Started', kind: 'elig' },
       { key: 'prof', label: 'Choose profession', kind: 'prof' },
     ];
     if (state.slug) {
       const p = profBySlug(state.slug);
       const proc = processFor(p.regulator);
-      (proc.prepSteps || []).forEach((s, i) => {
-        list.push({ key: 'prep' + i, label: s.title, kind: 'prep', stepIndex: i, mode: s.mode, groupLabel: proc.prepHeading || 'Prepare' });
-      });
+      if (proc.form1Gate) {
+        list.push({ key: 'form1', label: 'Form 1', kind: 'form1gate', groupLabel: proc.prepHeading || 'Prepare' });
+      } else {
+        (proc.prepSteps || []).forEach((s, i) => {
+          list.push({ key: 'prep' + i, label: s.title, kind: 'prep', stepIndex: i, mode: s.mode, groupLabel: proc.prepHeading || 'Prepare' });
+        });
+      }
       feeTasks(p).forEach((t) => {
         list.push({ key: 'task:' + t.key, label: t.label, kind: 'task', taskKey: t.key, mode: t.kind === 'walkin' ? 'offline' : 'on-page', groupLabel: proc.submitHeading });
       });
@@ -84,20 +88,20 @@
     }
     return list;
   }
-  const indexOfKey = (key) => items().findIndex((i) => i.key === key);
   function clickable(it) {
     if (it.kind === 'elig' || it.kind === 'prof') return true;
     return !!state.slug;
   }
   function isDone(it) {
-    if (it.kind === 'elig') return state.eligible === true;
+    if (it.kind === 'elig') return !!state.slug;
     if (it.kind === 'prof') return !!state.slug;
+    if (it.kind === 'form1gate') return !!state.done['form1'];
     if (it.kind === 'prep' || it.kind === 'task') return !!state.done[it.key];
     return false;
   }
   function firstStepKey() {
     const list = items();
-    const first = list.find((i) => i.kind === 'prep' || i.kind === 'task');
+    const first = list.find((i) => i.kind === 'prep' || i.kind === 'task' || i.kind === 'form1gate');
     return first ? first.key : 'prof';
   }
 
@@ -109,15 +113,22 @@
     const p = state.slug ? profBySlug(state.slug) : null;
 
     if (it.kind === 'elig') {
-      const nudge = state.eligible === false
-        ? `<div class="lf-nudge">${md(CONFIG.contactText)}<p><button class="lf-link" data-act="elig-anyway">Continue anyway &rarr;</button></p></div>`
-        : '';
-      return `<h2>Are you an active TEF CPT participant?</h2>
-        <div class="lf-pane-body">${md(CONFIG.eligibilityText)}</div>
-        <div class="lf-actions">
-          <button class="lf-btn" data-act="elig-yes">Yes, I'm active</button>
-          <button class="lf-btn ghost" data-act="elig-no">No / not sure</button>
-        </div>${nudge}`;
+      const intro = CONFIG.heroText ? `<p><strong>${md(CONFIG.heroText)}</strong></p>` : '';
+      return `<h2>Get Started / Eligibility / How it Works</h2>
+        <div class="lf-pane-body">
+          ${intro}
+          <p class="lf-time-required"><strong>Time required:</strong> 5&ndash;10 minutes with completed materials</p>
+          <p><strong>You&rsquo;ll need to:</strong></p>
+          <ul class="lf-how-it-works-list">
+            <li>Pick your Profession</li>
+            <li>Obtain License information / Complete paperwork</li>
+            <li>Complete reimbursement intake forms</li>
+          </ul>
+        </div>
+        <div class="lf-actions" style="margin-top:var(--space-3)">
+          <button class="lf-btn-outline" data-act="elig-yes">Get Started</button>
+        </div>
+        <p class="lf-disclaimer">${md(CONFIG.eligibilityText)}</p>`;
     }
 
     if (it.kind === 'prof') {
@@ -140,11 +151,57 @@
         </div>`;
     }
 
+    if (it.kind === 'form1gate') {
+      if (state.form1Already === false) {
+        return `<h2>Download, fill out, and notarize your Form 1</h2>
+          <div class="lf-pane-body">
+            <div class="lf-download-block">
+              <span class="lf-download-icon">&#11123;</span>
+              <div>${form1Html(p) || '<p>Download link coming soon.</p>'}<small>PDF download</small></div>
+            </div>
+            <p><strong>How to get your Form 1 notarized:</strong></p>
+            <div class="lf-accordion">
+              <details class="lf-accordion-item">
+                <summary>Local Walk-In Locations</summary>
+                <div class="lf-accordion-body">
+                  <p>Notarization is offered at most banks and credit unions, shipping and copy centers, and certain New York Public Library branches.</p>
+                  <p><strong>Typical cost:</strong> $0&ndash;$10</p>
+                </div>
+              </details>
+              <details class="lf-accordion-item">
+                <summary>Remote Online Notarization (RON)</summary>
+                <div class="lf-accordion-body">
+                  <p>Services: <a href="https://www.notarize.com" target="_blank" rel="noopener">Notarize</a> or <a href="https://www.onenotary.us" target="_blank" rel="noopener">OneNotary</a>.</p>
+                  <p><strong>Typical Cost:</strong> $25</p>
+                </div>
+              </details>
+              <details class="lf-accordion-item">
+                <summary>Mobile Notaries</summary>
+                <div class="lf-accordion-body">
+                  <p>Services: <a href="https://www.notary911.com" target="_blank" rel="noopener">Notary911</a> or <a href="https://www.travelingnotarynewyork.com" target="_blank" rel="noopener">Traveling Notary New York</a>.</p>
+                  <p><strong>Typical cost:</strong> $75&ndash;$150</p>
+                </div>
+              </details>
+            </div>
+            <p class="lf-form1-note">Once you have your notarized Form 1, return to this page to complete the reimbursement steps.</p>
+          </div>
+          <div class="lf-pane-nav">
+            <button class="lf-btn ghost" data-act="form1-back">&larr; Back</button>
+            <button class="lf-btn" data-act="form1-done">Continue &rarr;</button>
+          </div>`;
+      }
+      return `<h2>Do you already have your notarized Form 1?</h2>
+        <div class="lf-actions" style="margin-top:var(--space-3);gap:var(--space-2)">
+          <button class="lf-btn-gold" data-act="form1-yes">Yes</button>
+          <button class="lf-btn-gold ghost" data-act="form1-no">No</button>
+        </div>`;
+    }
+
     if (it.kind === 'task') {
       const proc = processFor(p.regulator);
       const firstTask = items().find((x) => x.kind === 'task');
       const intro = proc.submitIntro && firstTask && firstTask.key === it.key
-        ? `<div class="lf-intro">${fillTokens(md(proc.submitIntro), p)}</div>`
+        ? `<div class="lf-nudge">${fillTokens(md(proc.submitIntro), p)}</div>`
         : '';
       const t = feeTasks(p).find((x) => x.key === it.taskKey);
       if (t.kind === 'walkin') {
@@ -154,12 +211,10 @@
           <div class="lf-pane-nav"><button class="lf-btn ghost" data-act="prev">&larr; Back</button></div>`;
       }
       const notes = t.notes ? md(t.notes) : 'Submit your fee request to TEF using the form below.';
-      const upload = t.upload
-        ? `<p class="lf-upload-note">Have your scanned, notarized Form 1 ready — you'll upload it inside this form.</p>`
-        : '';
       const done = state.done[it.key];
-      return `${intro}<div class="lf-pane-head">${modeTag('on-page')}<h2>${esc(t.label)} ${badge(p)}</h2></div>
-        <div class="lf-pane-body">${notes}${upload}</div>
+      return `<div class="lf-pane-head">${modeTag('on-page')}<h2>${esc(t.label)} ${badge(p)}</h2></div>
+        ${intro}
+        <div class="lf-pane-body">${notes}</div>
         <div class="lf-embed"><iframe title="${esc(t.label)}" src="${embedUrl(t.url)}" loading="lazy"></iframe></div>
         <div class="lf-pane-nav">
           <button class="lf-btn ghost" data-act="prev">&larr; Back</button>
@@ -195,7 +250,7 @@
       const done = isDone(it) && !isActive;
       const lock = !clickable(it);
       const cls = isActive ? 'is-active' : done ? 'is-done' : lock ? 'is-locked' : '';
-      const dot = done ? '&check;' : n;
+      const dot = done ? '&#10003;' : '';
       if (isActive) {
         activeNum = n;
         activeLabel = it.label;
@@ -207,7 +262,7 @@
     rootEl.innerHTML = `
       <div class="lf">
         <nav class="lf-rail" aria-label="Your progress">
-          <h2 class="lf-rail-title">Your path</h2>
+          <p class="lf-rail-title">Your path</p>
           <ul class="lf-steps">${rail}</ul>
           <p class="lf-active-label">Step ${activeNum} of ${n} &middot; ${esc(activeLabel)}</p>
         </nav>
@@ -228,6 +283,7 @@
     state.slug = slug;
     state.eligible = true;
     state.done = {};
+    state.form1Already = null;
     state.activeKey = firstStepKey();
     syncUrl();
   }
@@ -249,6 +305,21 @@
       case 'elig-no': state.eligible = false; break;
       case 'elig-anyway': state.activeKey = 'prof'; break;
       case 'pick': pickProfession(btn.dataset.slug); break;
+      case 'form1-yes':
+        state.form1Already = true;
+        state.done['form1'] = true;
+        navBy(1);
+        break;
+      case 'form1-no':
+        state.form1Already = false;
+        break;
+      case 'form1-back':
+        state.form1Already = null;
+        break;
+      case 'form1-done':
+        state.done['form1'] = true;
+        navBy(1);
+        break;
       case 'next':
         if (active && (active.kind === 'prep' || active.kind === 'task')) state.done[active.key] = true;
         navBy(1);
@@ -259,7 +330,7 @@
         navBy(1);
         break;
       case 'restart':
-        state.eligible = null; state.slug = null; state.done = {}; state.activeKey = 'elig';
+        state.eligible = null; state.slug = null; state.done = {}; state.activeKey = 'elig'; state.form1Already = null;
         syncUrl();
         break;
       case 'jump': {

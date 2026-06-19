@@ -1,0 +1,23 @@
+{
+  "AAMA": {
+    "prepHeading": "Prepare",
+    "submitHeading": "Request your exam fee",
+    "submitIntro": "**{{name}}** is certified nationally through AAMA, not New York State. No Form 1 or notarization needed — TEF can pay your exam fee for eligible participants.",
+    "form1Gate": false,
+    "prepSteps": []
+  },
+  "NYSED": {
+    "prepHeading": "Prepare",
+    "submitHeading": "Submit your fee request",
+    "submitIntro": "Have your scanned, notarized Form 1 ready — you'll upload it inside the licensure fee request.",
+    "form1Gate": true,
+    "prepSteps": []
+  },
+  "OASAS": {
+    "prepHeading": "Prepare",
+    "submitHeading": "Submit your CASAC intake",
+    "submitIntro": "CASAC is regulated by **OASAS**, not NYSED — no Form 1 or notarization. Submit the combined intake form below. After you submit, TEF emails you a confirmation letter to upload with your OASAS licensure and exam fee application.",
+    "form1Gate": false,
+    "prepSteps": []
+  }
+}

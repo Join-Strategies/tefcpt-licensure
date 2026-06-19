@@ -47,6 +47,7 @@ const processes = Object.fromEntries(
       prepHeading: entry.data.prepHeading ?? 'Prepare',
       submitHeading: entry.data.submitHeading,
       submitIntro: entry.data.submitIntro ?? null,
+      form1Gate: entry.data.form1Gate ?? false,
       prepSteps: entry.data.prepSteps,
     },
   ])
@@ -54,9 +55,11 @@ const processes = Object.fromEntries(
 
 const eligibility = await getEntry('page', 'eligibility');
 const contact = await getEntry('page', 'contact');
+const heroEntry = await getEntry('page', 'hero');
 const config = {
   eligibilityText: eligibility?.body.trim() ?? '',
   contactText: contact?.body.trim() ?? '',
+  heroText: heroEntry?.body.trim() ?? '',
 };
 ---
 <Page

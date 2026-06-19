@@ -45,6 +45,7 @@ const processCollection = defineCollection({
     submitHeading: z.string(),
     submitIntro: z.string().optional(),
     prepSteps: z.array(processStepSchema).default([]),
+    form1Gate: z.boolean().optional().default(false),
   }),
 });
 

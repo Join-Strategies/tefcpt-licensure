@@ -1,11 +1,10 @@
 ---
 import { getEntry } from 'astro:content';
 const entry = await getEntry('page', 'hero');
-const { Content } = await entry!.render();
 ---
 <section class="hero">
-  <h1>{entry!.data.title}</h1>
-  <div class="hero-body">
-    <Content />
+  <div class="hero-left">
+    <span class="hero-eyebrow">Payment Support</span>
+    <h1>{entry!.data.title}</h1>
   </div>
 </section>
