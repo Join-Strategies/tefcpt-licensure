@@ -23,16 +23,20 @@ Whether a person is an active 1199SEIU TEF CPT participant, the precondition for
 A participant's submission asking TEF to cover a fee. Two kinds: a **Licensure fee** (the application/licensure fee paid to the regulator) and an **Exam fee** (the credentialing exam fee).
 _Avoid_: Application, intake (except where a regulator's own combined form is named that)
 
+**Fee type**:
+The participant's declared intent for what they need covered: licensure/application fee, exam fee, or both. Selected after profession choice and before any prep steps. Drives which steps appear in the flow: exam-fee-only paths skip the Form 1 gate entirely; licensure-fee and both paths include it.
+_Avoid_: Fee category, fee kind
+
 **Walk-in fee**:
 A fee handled in person at TEF Career Services rather than through an online form (e.g. PA and MHC exam fees). Has no submittable form on the page.
 _Avoid_: In-person fee, manual fee
 
 **Prep phase**:
-The offline portion of an NYSED journey: download Form 1, complete it, get it notarized. Presented as prerequisite guidance, never a blocking gate. OASAS and AAMA have no prep phase.
+The offline portion of an NYSED journey: download Form 1, complete it, get it notarized. Presented as prerequisite guidance, never a blocking gate. Only shown on the licensure-fee and both-fees paths; exam-fee-only participants skip it entirely. OASAS and AAMA have no prep phase.
 _Avoid_: Step 1, pre-flight
 
 **Submission phase**:
-The online portion of a journey: the actual fee request form(s), embedded inline on the page. Always reachable regardless of prep status. For NYSED, the scanned notarized Form 1 is uploaded inside the licensure fee request specifically; the exam fee request needs no Form 1.
+The online portion of a journey: the actual fee request form(s), embedded inline on the page. Follows fee-type selection, not profession selection. Always reachable regardless of prep status. For NYSED, the scanned notarized Form 1 is uploaded inside the licensure fee request specifically; the exam fee request needs no Form 1.
 _Avoid_: Step 2, checkout
 
 **On-page vs offline**:
@@ -40,5 +44,5 @@ A per-step distinction surfaced in the UI. On-page steps are done on the page (d
 _Avoid_: Online/manual
 
 **Flow**:
-The client-side state machine that drives the guided sidebar journey. Its logic lives in a shared `public/*.js` consumed by both the Astro page and the WP `render.php` block, the same way `public/styles.css` is shared. Astro and WP must not fork it.
+The client-side state machine that drives the guided sidebar journey. Branches at fee-type selection: exam-fee-only paths skip the Form 1 gate; licensure-fee and both-fees paths include it. Its logic lives in a shared `public/*.js` consumed by both the Astro page and the WP `render.php` block, the same way `public/styles.css` is shared. Astro and WP must not fork it.
 _Avoid_: Wizard, stepper (use for the UI rail only)

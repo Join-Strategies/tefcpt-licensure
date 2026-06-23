@@ -48,6 +48,24 @@
       .split('{{checklist}}').join(checklistHtml(p));
   }
 
+  function needsFeeTypeStep(p) {
+    const lic = p.licensure || { kind: 'none' };
+    const exam = p.exam || { kind: 'none' };
+    // Combined form (same URL) skips the fee-type question
+    if (lic.kind === 'asana' && exam.kind === 'asana' && lic.url && lic.url === exam.url) return false;
+    return true;
+  }
+
+  function feeTypeOptions(p) {
+    const lic = p.licensure || { kind: 'none' };
+    const exam = p.exam || { kind: 'none' };
+    const opts = [];
+    if (lic.kind === 'asana' || lic.kind === 'walkin') opts.push({ val: 'lic', label: 'Licensure / application fee' });
+    if (exam.kind === 'asana') opts.push({ val: 'exam', label: 'Exam fee' }); // walk-in exam fees are hidden
+    if (opts.length === 2) opts.push({ val: 'both', label: 'Both' });
+    return opts;
+  }
+
   function feeTasks(p) {
     const tasks = [];
     const lic = p.licensure || { kind: 'none' };
@@ -56,14 +74,20 @@
       tasks.push({ key: 'combined', label: 'Licensure & exam fee', kind: 'asana', url: lic.url, notes: lic.notes, upload: p.regulator === 'NYSED' });
       return tasks;
     }
-    if (lic.kind === 'asana') tasks.push({ key: 'lic', label: 'Licensure / application fee', kind: 'asana', url: lic.url, notes: lic.notes, upload: p.regulator === 'NYSED' });
-    else if (lic.kind === 'walkin') tasks.push({ key: 'lic', label: 'Licensure fee', kind: 'walkin', notes: lic.notes });
-    if (exam.kind === 'asana') tasks.push({ key: 'exam', label: 'Exam fee', kind: 'asana', url: exam.url, notes: exam.notes, upload: false });
-    else if (exam.kind === 'walkin') tasks.push({ key: 'exam', label: 'Exam fee', kind: 'walkin', notes: exam.notes });
+    const showLic = state.feeType === null || state.feeType === 'lic' || state.feeType === 'both';
+    const showExam = state.feeType === null || state.feeType === 'exam' || state.feeType === 'both';
+    if (showLic) {
+      if (lic.kind === 'asana') tasks.push({ key: 'lic', label: 'Licensure / application fee', kind: 'asana', url: lic.url, notes: lic.notes, upload: p.regulator === 'NYSED' });
+      else if (lic.kind === 'walkin') tasks.push({ key: 'lic', label: 'Licensure fee', kind: 'walkin', notes: lic.notes });
+    }
+    if (showExam) {
+      if (exam.kind === 'asana') tasks.push({ key: 'exam', label: 'Exam fee', kind: 'asana', url: exam.url, notes: exam.notes, upload: false });
+      // walk-in exam fees are hidden from the flow; surfaced in FAQs instead
+    }
     return tasks;
   }
 
-  const state = { eligible: null, slug: null, activeKey: 'elig', done: {}, form1Already: null };
+  const state = { eligible: null, slug: null, activeKey: 'elig', done: {}, form1Already: null, feeType: null };
 
   // ---- Item model (the rail) --------------------------------------------
   function items() {
@@ -74,17 +98,25 @@
     if (state.slug) {
       const p = profBySlug(state.slug);
       const proc = processFor(p.regulator);
-      if (proc.form1Gate) {
-        list.push({ key: 'form1', label: 'Form 1', kind: 'form1gate', groupLabel: proc.prepHeading || 'Prepare' });
-      } else {
-        (proc.prepSteps || []).forEach((s, i) => {
-          list.push({ key: 'prep' + i, label: s.title, kind: 'prep', stepIndex: i, mode: s.mode, groupLabel: proc.prepHeading || 'Prepare' });
-        });
+
+      if (needsFeeTypeStep(p)) {
+        list.push({ key: 'feetype', label: 'What do you need covered?', kind: 'feetype' });
       }
-      feeTasks(p).forEach((t) => {
-        list.push({ key: 'task:' + t.key, label: t.label, kind: 'task', taskKey: t.key, mode: t.kind === 'walkin' ? 'offline' : 'on-page', groupLabel: proc.submitHeading });
-      });
-      list.push({ key: 'done', label: 'All set', kind: 'done' });
+
+      if (!needsFeeTypeStep(p) || state.feeType !== null) {
+        const feeIncludesLic = state.feeType === null || state.feeType === 'lic' || state.feeType === 'both';
+        if (proc.form1Gate && feeIncludesLic) {
+          list.push({ key: 'form1', label: 'Form 1', kind: 'form1gate', groupLabel: proc.prepHeading || 'Prepare' });
+        } else {
+          (proc.prepSteps || []).forEach((s, i) => {
+            list.push({ key: 'prep' + i, label: s.title, kind: 'prep', stepIndex: i, mode: s.mode, groupLabel: proc.prepHeading || 'Prepare' });
+          });
+        }
+        feeTasks(p).forEach((t) => {
+          list.push({ key: 'task:' + t.key, label: t.label, kind: 'task', taskKey: t.key, mode: t.kind === 'walkin' ? 'offline' : 'on-page', groupLabel: proc.submitHeading });
+        });
+        list.push({ key: 'done', label: 'All set', kind: 'done' });
+      }
     }
     return list;
   }
@@ -95,13 +127,14 @@
   function isDone(it) {
     if (it.kind === 'elig') return !!state.slug;
     if (it.kind === 'prof') return !!state.slug;
+    if (it.kind === 'feetype') return !!state.feeType;
     if (it.kind === 'form1gate') return !!state.done['form1'];
     if (it.kind === 'prep' || it.kind === 'task') return !!state.done[it.key];
     return false;
   }
   function firstStepKey() {
     const list = items();
-    const first = list.find((i) => i.kind === 'prep' || i.kind === 'task' || i.kind === 'form1gate');
+    const first = list.find((i) => i.kind === 'prep' || i.kind === 'task' || i.kind === 'form1gate' || i.kind === 'feetype');
     return first ? first.key : 'prof';
   }
 
@@ -149,6 +182,15 @@
           <button class="lf-btn ghost" data-act="prev">&larr; Back</button>
           <button class="lf-btn" data-act="next">Continue &rarr;</button>
         </div>`;
+    }
+
+    if (it.kind === 'feetype') {
+      const opts = feeTypeOptions(p);
+      const btns = opts.map((o) =>
+        `<button class="lf-btn-gold" data-act="feetype-pick" data-fee-type="${o.val}">${esc(o.label)}</button>`
+      ).join('');
+      return `<h2>What fee do you need covered? ${badge(p)}</h2>
+        <div class="lf-actions" style="margin-top:var(--space-3);gap:var(--space-2)">${btns}</div>`;
     }
 
     if (it.kind === 'form1gate') {
@@ -200,7 +242,7 @@
     if (it.kind === 'task') {
       const proc = processFor(p.regulator);
       const firstTask = items().find((x) => x.kind === 'task');
-      const intro = proc.submitIntro && firstTask && firstTask.key === it.key
+      const intro = proc.submitIntro && firstTask && firstTask.key === it.key && state.feeType !== 'exam'
         ? `<div class="lf-nudge">${fillTokens(md(proc.submitIntro), p)}</div>`
         : '';
       const t = feeTasks(p).find((x) => x.key === it.taskKey);
@@ -275,6 +317,8 @@
     const url = new URL(location.href);
     if (state.slug) url.searchParams.set('profession', state.slug);
     else url.searchParams.delete('profession');
+    if (state.feeType) url.searchParams.set('fee', state.feeType);
+    else url.searchParams.delete('fee');
     history.replaceState({}, '', url);
   }
 
@@ -284,6 +328,7 @@
     state.eligible = true;
     state.done = {};
     state.form1Already = null;
+    state.feeType = null;
     state.activeKey = firstStepKey();
     syncUrl();
   }
@@ -305,6 +350,12 @@
       case 'elig-no': state.eligible = false; break;
       case 'elig-anyway': state.activeKey = 'prof'; break;
       case 'pick': pickProfession(btn.dataset.slug); break;
+      case 'feetype-pick':
+        state.feeType = btn.dataset.feeType;
+        state.done = {};
+        state.form1Already = null;
+        navBy(1);
+        break;
       case 'form1-yes':
         state.form1Already = true;
         state.done['form1'] = true;
@@ -330,7 +381,7 @@
         navBy(1);
         break;
       case 'restart':
-        state.eligible = null; state.slug = null; state.done = {}; state.activeKey = 'elig'; state.form1Already = null;
+        state.eligible = null; state.slug = null; state.done = {}; state.activeKey = 'elig'; state.form1Already = null; state.feeType = null;
         syncUrl();
         break;
       case 'jump': {
@@ -343,10 +394,16 @@
   });
 
   // ---- Init -------------------------------------------------------------
-  const wanted = new URLSearchParams(location.search).get('profession');
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get('profession');
+  const wantedFee = params.get('fee');
   if (wanted && profBySlug(wanted)) {
     state.slug = wanted;
     state.eligible = true;
+    const p = profBySlug(wanted);
+    if (needsFeeTypeStep(p) && wantedFee && ['lic', 'exam', 'both'].includes(wantedFee)) {
+      state.feeType = wantedFee;
+    }
     state.activeKey = firstStepKey();
   }
   render();
