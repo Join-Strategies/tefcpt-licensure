@@ -27,11 +27,29 @@
       "toolbar": "full"
     },
     {
-      "key": "field_tefcpt_lic_faq",
+      "key": "field_tefcpt_lic_faq_items",
       "label": "FAQ",
-      "name": "faq",
-      "type": "wysiwyg",
-      "toolbar": "full"
+      "name": "faq_items",
+      "type": "repeater",
+      "instructions": "One row per FAQ item. Drag to reorder.",
+      "button_label": "Add FAQ item",
+      "sub_fields": [
+        {
+          "key": "field_tefcpt_lic_faq_q",
+          "label": "Question",
+          "name": "question",
+          "type": "text",
+          "required": 1
+        },
+        {
+          "key": "field_tefcpt_lic_faq_a",
+          "label": "Answer",
+          "name": "answer",
+          "type": "wysiwyg",
+          "toolbar": "basic",
+          "media_upload": 0
+        }
+      ]
     },
     {
       "key": "field_tefcpt_lic_contact",

@@ -260,7 +260,7 @@
         <div class="lf-embed"><iframe title="${esc(t.label)}" src="${embedUrl(t.url)}" loading="lazy"></iframe></div>
         <div class="lf-pane-nav">
           <button class="lf-btn ghost" data-act="prev">&larr; Back</button>
-          <button class="lf-btn" data-act="task-done">${done ? 'Done &check;' : 'Mark as done'}</button>
+          <button class="lf-btn" data-act="task-done">${done ? 'Done' : 'Mark as done'}</button>
         </div>`;
     }
 
@@ -292,7 +292,7 @@
       const done = isDone(it) && !isActive;
       const lock = !clickable(it);
       const cls = isActive ? 'is-active' : done ? 'is-done' : lock ? 'is-locked' : '';
-      const dot = done ? '&#10003;' : '';
+      const dot = '';
       if (isActive) {
         activeNum = n;
         activeLabel = it.label;
@@ -390,7 +390,10 @@
         break;
       }
     }
+    // Preserve scroll position across renders so the page doesn't bounce
+    const scrollY = window.scrollY;
     render();
+    window.scrollTo({ top: scrollY, behavior: 'instant' });
   });
 
   // ---- Init -------------------------------------------------------------
@@ -408,3 +411,26 @@
   }
   render();
 })();
+
+// FAQ accordion (single-open)
+document.addEventListener('DOMContentLoaded', function () {
+  var entries = document.querySelectorAll('.faq-entry');
+  entries.forEach(function (entry) {
+    var btn  = entry.querySelector('.faq-toggle');
+    var body = entry.querySelector('.faq-body');
+    if (!btn || !body) return;
+    btn.addEventListener('click', function () {
+      var isOpen = entry.classList.contains('is-open');
+      entries.forEach(function (e) {
+        e.classList.remove('is-open');
+        e.querySelector('.faq-toggle').setAttribute('aria-expanded', 'false');
+        e.querySelector('.faq-body').hidden = true;
+      });
+      if (!isOpen) {
+        entry.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+        body.hidden = false;
+      }
+    });
+  });
+});

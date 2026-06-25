@@ -94,8 +94,12 @@ The page is server-rendered by a custom Gutenberg block, not by the theme direct
   `styles.css` + `licensure-flow.js` on its own page ID).
 
 Note: the interactive "Your path" stepper (the `lf-*` classes in `public/licensure-flow.js`
-and `public/styles.css`) is **prototype-only**. `render.php` ships a static profession-grid
-instead and never references `lf-*`. So the mobile-stepper work touches only the Astro layer.
+and `public/styles.css`) **now ships in production too** — `render.php` emits
+`<div id="flow-root" class="lf-root">` and the flow renders client-side from the same JSON
+shape. (This was prototype-only earlier; the claim is kept here only as history.) Because the
+rail renders inside the theme's `.prose` container, its list/spacing styles collide with
+`@tailwindcss/typography`. See `docs/postmortem-stepper-rail-alignment.md` for one such
+collision (a `.prose :where(ul>li)` rule shifting the connector line) and how to debug it.
 
 ## 4. WPEngine interface mechanics (from the sister repo)
 

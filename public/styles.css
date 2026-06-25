@@ -1,22 +1,72 @@
+/* =====================================================================
+   TEF-CPT Licensure Page — design system
+   ---------------------------------------------------------------------
+   Token-driven, anchored to the Landslide (tefcpt.org) theme:
+   Poppins headings + Roboto body, maroon/gold palette, editorial scale.
+   Shared by the Astro prototype (src/) and the WP block (plugin/).
+   See docs/design-system.md for the reference.
+   ===================================================================== */
+
 :root {
+  /* ── Color ─────────────────────────────────────────────────────── */
   --color-bg: #ffffff;
-  --color-text: #1a1a1a;
+  --color-text: #1a1a1a;       /* headings / strong text */
+  --color-body: #374151;       /* body copy (matches theme prose) */
   --color-muted: #6b5c54;
   --color-border: #F2E9E1;
-  --color-accent: #650B17;
+  --color-accent: #650B17;     /* primary-600 */
   --color-accent-hover: #3D0310;
-  --color-gold: #FECB00;
+  --color-gold: #FECB00;       /* secondary-500 */
   --color-gold-dark: #7a5b00;
   --color-nysed: #1d4e89;
   --color-oasas: #4a3272;
   --color-aama: #8b1a1a;
-  --color-soft-bg: #F8F8F8;
-  --radius: 10px;
+  --color-soft-bg: #F8F8F8;    /* gray-100 */
+
+  /* ── Type families ─────────────────────────────────────────────── */
+  --font-head: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  /* ── Type scale (editorial; fluid where it earns it) ───────────── */
+  --fs-display: clamp(2.25rem, 5vw, 3rem);    /* hero H1 */
+  --fs-h2:      clamp(1.75rem, 3.5vw, 2.25rem); /* section headings */
+  --fs-h3:      1.375rem;                       /* card / FAQ / step titles */
+  --fs-lg:      1.125rem;                       /* lead copy */
+  --fs-base:    1rem;                           /* body */
+  --fs-sm:      0.875rem;                        /* captions, notes */
+  --fs-eyebrow: 0.75rem;                         /* uppercase labels, badges */
+
+  /* ── Line height ───────────────────────────────────────────────── */
+  --lh-display: 1.1;
+  --lh-heading: 1.2;
+  --lh-snug:    1.35;
+  --lh-normal:  1.55;
+  --lh-prose:   1.75;
+
+  /* ── Letter spacing (theme tightens larger headings) ───────────── */
+  --ls-display: -0.02em;
+  --ls-heading: -0.015em;
+  --ls-eyebrow: 0.08em;
+
+  /* ── Spacing scale ─────────────────────────────────────────────── */
+  --space-0: 0.25rem;
   --space-1: 0.5rem;
   --space-2: 1rem;
   --space-3: 1.5rem;
   --space-4: 2rem;
   --space-5: 3rem;
+  --space-6: 4rem;
+
+  /* ── Radii ─────────────────────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation ─────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(39, 0, 22, 0.06);
+  --shadow: 0 6px 24px rgba(39, 0, 22, 0.08);
+
   --max-width: 980px;
 }
 
@@ -24,22 +74,25 @@
 
 body {
   margin: 0;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--color-body);
   background: var(--color-bg);
 }
 
 .page {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-5) var(--space-3);
 }
 
-h1, h2, h3, h4 {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  line-height: 1.25;
+/* ── Base headings (scoped to our markup so theme chrome is untouched) ── */
+.page h1, .page h2, .page h3, .page h4 {
+  font-family: var(--font-head);
+  color: var(--color-accent);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
   margin: 0 0 var(--space-2);
 }
 
@@ -50,50 +103,89 @@ a {
 }
 a:hover { color: var(--color-accent-hover); }
 
+/* ── Shared section heading: eyebrow ──────────────────────────────── */
+.eyebrow,
+.hero-eyebrow {
+  display: block;
+  font-family: var(--font-head);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-0);
+}
+
+/* =====================================================================
+   Hero
+   ===================================================================== */
 .hero {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: var(--space-3) 0 var(--space-2);
-  border-bottom: 3px solid var(--color-accent);
   gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-3);
+  border-bottom: 3px solid var(--color-accent);
 }
 .hero-left { flex: 1; }
-.hero-eyebrow {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 0.25rem;
+.hero h1 {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  margin-bottom: 0;
 }
-.hero h1 { font-size: 2rem; color: var(--color-accent); margin-bottom: 0; }
 .hero-logo { flex: none; }
 .hero-logo img { max-height: 64px; width: auto; }
-.hero-body { color: var(--color-muted); font-size: 1.05rem; margin-top: var(--space-1); }
+.hero-body {
+  color: var(--color-muted);
+  font-size: var(--fs-lg);
+  margin-top: var(--space-1);
+}
 
+/* =====================================================================
+   Section rhythm + section heading
+   ===================================================================== */
+.eligibility-teaser,
+.how-it-works,
+.profession-grid,
+.faq,
+.contact-footer {
+  margin: var(--space-6) 0;
+}
+
+.faq,
+.contact-footer {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.faq h2,
+.contact-footer h2,
+.how-it-works h2,
+.profession-grid-heading {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+  margin-bottom: var(--space-5);
+}
+
+/* =====================================================================
+   Eligibility teaser (callout)
+   ===================================================================== */
 .eligibility-teaser {
   background: var(--color-soft-bg);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3);
   border-radius: var(--radius);
-  margin: var(--space-3) 0;
   border-left: 4px solid var(--color-gold);
 }
-.eligibility-teaser h2 { font-size: 1.05rem; margin-bottom: var(--space-1); }
+.eligibility-teaser h2 {
+  font-size: var(--fs-h3);
+  margin-bottom: var(--space-1);
+}
 
-.how-it-works {
-  margin: var(--space-4) 0;
-}
-.how-it-works h2 { font-size: 1.35rem; }
-
-.profession-grid {
-  margin: var(--space-4) 0;
-}
-.profession-grid-heading {
-  font-size: 1.35rem;
-  margin-bottom: var(--space-3);
-}
+/* =====================================================================
+   Profession cards
+   ===================================================================== */
 .profession-grid-items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -101,17 +193,21 @@ a:hover { color: var(--color-accent-hover); }
 }
 
 .profession-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-left: 3px solid var(--color-border);
   border-radius: var(--radius);
-  padding: var(--space-3);
-  background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
-  transition: border-left-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  transition: border-left-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.profession-card:hover, .profession-card:focus-within {
+.profession-card:hover,
+.profession-card:focus-within {
   border-left-color: var(--color-accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 .profession-card-header {
   display: flex;
@@ -121,79 +217,153 @@ a:hover { color: var(--color-accent-hover); }
   margin-bottom: var(--space-2);
 }
 .profession-card-header h3 {
-  font-size: 1.1rem;
+  font-size: var(--fs-h3);
   margin: 0;
   flex: 1;
 }
-
-.regulator-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  color: #fff;
-  text-transform: uppercase;
-}
-.regulator-nysed { background: var(--color-nysed); }
-.regulator-oasas { background: var(--color-oasas); }
-.regulator-aama { background: var(--color-aama); }
-
-.profession-card-body { font-size: 0.95rem; }
+.profession-card-body { font-size: var(--fs-base); }
 .profession-card-body p { margin: var(--space-1) 0; }
 
-.form1-download a {
-  display: inline-block;
-  font-weight: 600;
-}
+.form1-download a { display: inline-block; font-weight: 600; }
 .form1-revision {
   display: inline-block;
   margin-left: var(--space-1);
   color: var(--color-muted);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
+.checklist-link a { font-size: var(--fs-sm); }
 
-.checklist-link a {
-  font-size: 0.9rem;
-}
-
+/* ── Fee section within a card ────────────────────────────────────── */
 .fee-section {
   margin-top: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px dashed var(--color-border);
 }
 .fee-section h4 {
-  font-size: 0.85rem;
+  font-size: var(--fs-eyebrow);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-eyebrow);
   color: var(--color-muted);
   margin-bottom: var(--space-1);
 }
 .fee-notes {
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   color: var(--color-muted);
   margin-bottom: var(--space-1);
 }
-
-.asana-trigger {
-  appearance: none;
-  background: var(--color-accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.asana-trigger:hover { background: var(--color-accent-hover); }
-
 .walk-in-notice {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   font-style: italic;
   color: var(--color-muted);
 }
 
+/* =====================================================================
+   Badges (regulator + flow mode) — one pill pattern
+   ===================================================================== */
+.regulator-badge,
+.lf-mode {
+  display: inline-block;
+  font-family: var(--font-head);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.3em 0.7em;
+  border-radius: var(--radius-pill);
+}
+.regulator-badge { color: #fff; }
+.regulator-nysed { background: var(--color-nysed); }
+.regulator-oasas { background: var(--color-oasas); }
+.regulator-aama  { background: var(--color-aama); }
+.lf-mode-on-page { background: #fdf6d8; color: var(--color-gold-dark); }
+.lf-mode-offline { background: #fdecc8; color: var(--color-gold-dark); }
+
+/* =====================================================================
+   Buttons — unified system
+   ===================================================================== */
+.btn,
+.lf-btn,
+.lf-btn-outline,
+.lf-btn-gold,
+.asana-trigger {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+/* Primary (maroon, rounded rect) */
+.lf-btn,
+.asana-trigger {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: var(--fs-base);
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius-sm);
+}
+.lf-btn:hover,
+.asana-trigger:hover { background: var(--color-accent-hover); }
+.lf-btn.ghost {
+  background: transparent;
+  color: var(--color-accent);
+  border-color: var(--color-border);
+}
+.lf-btn.ghost:hover { background: #f9f0f2; border-color: var(--color-accent); }
+
+/* Outline CTA (uppercase) */
+.lf-btn-outline {
+  background: transparent;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+}
+.lf-btn-outline:hover { background: #f9f0f2; }
+
+/* Gold (pill) */
+.lf-btn-gold {
+  background: var(--color-gold);
+  color: var(--color-text);
+  border-color: var(--color-gold);
+  font-size: var(--fs-base);
+  padding: 0.7rem 1.75rem;
+  border-radius: var(--radius-pill);
+}
+.lf-btn-gold:hover { opacity: 0.85; }
+.lf-btn-gold.ghost {
+  background: transparent;
+  color: var(--color-gold-dark);
+  border-color: var(--color-gold);
+}
+.lf-btn-gold.ghost:hover { background: #fffbea; }
+
+/* Text link button */
+.lf-link {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* =====================================================================
+   Asana modal
+   ===================================================================== */
 .asana-modal {
   width: min(960px, 95vw);
   height: min(720px, 92vh);
@@ -202,7 +372,7 @@ a:hover { color: var(--color-accent-hover); }
   border-radius: var(--radius);
   overflow: hidden;
 }
-.asana-modal::backdrop { background: rgba(0,0,0,0.6); }
+.asana-modal::backdrop { background: rgba(39, 0, 22, 0.6); }
 .asana-modal-header {
   display: flex;
   justify-content: space-between;
@@ -211,7 +381,7 @@ a:hover { color: var(--color-accent-hover); }
   border-bottom: 1px solid var(--color-border);
   background: var(--color-soft-bg);
 }
-.asana-modal-header h3 { font-size: 1rem; margin: 0; }
+.asana-modal-header h3 { font-size: var(--fs-lg); margin: 0; }
 .asana-close {
   appearance: none;
   background: transparent;
@@ -221,9 +391,7 @@ a:hover { color: var(--color-accent-hover); }
   line-height: 1;
   color: var(--color-muted);
 }
-.asana-modal-body {
-  height: calc(100% - 56px);
-}
+.asana-modal-body { height: calc(100% - 56px); }
 .asana-modal-body iframe {
   width: 100%;
   height: 100%;
@@ -231,81 +399,11 @@ a:hover { color: var(--color-accent-hover); }
   display: block;
 }
 
-.faq, .contact-footer {
-  margin: var(--space-4) 0;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
-}
-.faq h2, .contact-footer h2 { font-size: 1.25rem; }
-
-@media (max-width: 600px) {
-  .profession-grid-items { grid-template-columns: 1fr; }
-  .hero h1 { font-size: 1.6rem; }
-}
-
-/* ── Theme overrides ──────────────────────────────────────────────────────── */
-
-.tefcpt-licensure-page .pre-footer { display: none !important; }
-
-/* Reset WP theme list styles that bleed into the flow nav.
-   Only zero padding on the <ul>; the <li> paddings are intentional and
-   the connector-line math depends on them, so don't clobber those. */
-.lf-steps {
-  list-style: none !important;
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-.lf-steps li {
-  list-style: none !important;
-  margin-left: 0 !important;
-}
-.lf-steps li::before,
-.lf-steps li::after { content: none !important; display: none !important; }
-
-/* Reset WP theme heading styles inside the flow */
-.lf-rail h1, .lf-rail h2, .lf-rail h3,
-.lf-rail h4, .lf-rail h5, .lf-rail h6 {
-  font-size: inherit !important;
-  font-weight: inherit !important;
-  color: inherit !important;
-  line-height: inherit !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-.lf-pane h2 {
-  font-size: 1.35rem !important;
-  color: var(--color-accent) !important;
-  line-height: 1.25 !important;
-  margin: 0 0 var(--space-2) !important;
-  padding: 0 !important;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 0.5rem !important;
-}
-.lf-pane p {
-  font-size: 0.95rem !important;
-  line-height: 1.55 !important;
-  margin: var(--space-1) 0 !important;
-}
-.lf-mode {
-  font-size: 0.68rem !important;
-  line-height: 1 !important;
-  font-weight: 700 !important;
-}
-.lf-step-label {
-  font-size: 0.9rem !important;
-  font-weight: inherit !important;
-  color: inherit !important;
-  line-height: 1.35 !important;
-}
-
-/* ===================================================================== */
-/* Guided flow (Option B sidebar). Shared by the Astro page and the WP   */
-/* block; driven by public/licensure-flow.js.                            */
-/* ===================================================================== */
-.lf-root { margin: var(--space-4) 0; }
+/* =====================================================================
+   Guided flow (Option B sidebar). Shared by Astro + WP block;
+   driven by public/licensure-flow.js.
+   ===================================================================== */
+.lf-root { margin: var(--space-5) 0; }
 
 .lf {
   display: grid;
@@ -325,52 +423,57 @@ a:hover { color: var(--color-accent-hover); }
   background: var(--color-gold);
 }
 
+/* ── Rail ─────────────────────────────────────────────────────────── */
 .lf-rail {
   position: sticky;
   top: var(--space-3);
   padding-right: var(--space-3);
 }
 .lf-rail-title {
-  font-size: 0.72rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-  color: var(--color-muted) !important;
-  margin: 0 0 var(--space-1) !important;
-  line-height: 1.2 !important;
+  font-family: var(--font-head);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0 0 var(--space-1);
+  line-height: var(--lh-heading);
 }
 .lf-steps {
   list-style: none;
   margin: 0;
   padding: 0;
   position: relative;
+  isolation: isolate;
 }
 .lf-steps::before {
   content: '';
   position: absolute;
-  top: 12px;
-  bottom: 12px;
-  left: calc(1rem + 11px);
+  /* Span from the first dot's center to the last dot's center, not the full
+     container, so the line doesn't overshoot above/below the end dots.
+     Offset = step padding-top (var(--space-1)) + half the 24px dot. */
+  top: calc(var(--space-1) + 12px);
+  bottom: calc(var(--space-1) + 12px);
+  left: calc(var(--space-2) + 11px);
   width: 2px;
   background: var(--color-border);
-  z-index: 0;
+  z-index: -1;
 }
-
 .lf-group {
-  font-size: 0.7rem;
+  font-family: var(--font-head);
+  font-size: var(--fs-eyebrow);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
   color: var(--color-muted);
   margin: var(--space-2) 0 var(--space-1);
-  padding-left: calc(var(--space-2) + 24px + 0.75rem) !important;
+  padding-left: calc(var(--space-2) + 24px + 0.75rem);
 }
-
 .lf-step {
   display: flex;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.4rem var(--space-2) !important;
+  padding: var(--space-1) var(--space-2);
   cursor: pointer;
   color: var(--color-muted);
 }
@@ -378,48 +481,75 @@ a:hover { color: var(--color-accent-hover); }
   flex: none;
   width: 24px;
   height: 24px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 2px solid var(--color-border);
   display: grid;
   place-items: center;
-  font-size: 0.78rem;
-  font-weight: 700;
   background: #fff;
   position: relative;
   z-index: 1;
 }
-.lf-step-label { font-size: 0.9rem; line-height: 1.35; }
+.lf-step-label {
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+}
 .lf-step.is-active { color: var(--color-text); font-weight: 600; }
-.lf-step.is-active .lf-dot { border-color: var(--color-gold); background: #fff; box-shadow: 0 0 0 3px rgba(254,203,0,0.3); }
+.lf-step.is-active .lf-dot {
+  border-color: var(--color-gold);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(254, 203, 0, 0.3);
+}
 .lf-step.is-done { color: var(--color-text); }
-.lf-step.is-done .lf-dot { background: var(--color-accent); border-color: var(--color-accent); color: #fff; font-size: 0.8rem; }
+.lf-step.is-done .lf-dot {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.lf-step.is-done .lf-dot::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(40deg) translate(-1px, -2px);
+}
 .lf-step.is-locked { opacity: 0.45; cursor: default; }
 .lf-active-label { display: none; }
 
+/* ── Pane ─────────────────────────────────────────────────────────── */
 .lf-pane {
   background: #fff;
   border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   padding: var(--space-4);
 }
-.lf-pane h2 { font-size: 1.4rem; color: var(--color-accent); }
-.lf-pane-head { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-2); }
-.lf-pane-body { color: var(--color-text); }
-.lf-pane-body p { margin: var(--space-1) 0; }
-
-.lf-mode {
-  align-self: flex-start;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 2px 10px;
-  border-radius: 999px;
+.lf-pane-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
-.lf-mode-on-page { background: #fdf6d8; color: #7a5b00; }
-.lf-mode-offline { background: #fdecc8; color: #7a5b00; }
+.lf-pane-body {
+  color: var(--color-body);
+  margin-top: var(--space-2);
+}
 
-.lf-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.lf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.lf-pane-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
 
+/* ── Profession choice grid ───────────────────────────────────────── */
 .lf-choice-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -434,113 +564,72 @@ a:hover { color: var(--color-accent-hover); }
   text-align: left;
   background: #fff;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.8rem 1rem;
-  font-size: 1rem;
+  font-size: var(--fs-base);
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
-.lf-choice:hover, .lf-choice:focus-visible { border-color: var(--color-accent); background: #f3f8fd; outline: none; }
-
-.lf-btn {
-  appearance: none;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  background: var(--color-accent);
-  color: #fff;
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.65rem 1.1rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.lf-btn:hover { background: var(--color-accent-hover); }
-.lf-btn.ghost { background: transparent; color: var(--color-accent); border-color: var(--color-border); }
-.lf-btn.ghost:hover { background: #f9f0f2; border-color: var(--color-accent); }
-
-.lf-btn-outline {
-  appearance: none;
-  background: transparent;
-  border: 2px solid var(--color-accent);
-  border-radius: 8px;
-  color: var(--color-accent);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.65rem 1.5rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.lf-btn-outline:hover { background: #f9f0f2; }
-
-.lf-btn-gold {
-  appearance: none;
-  background: var(--color-gold);
-  border: 2px solid var(--color-gold);
-  border-radius: 999px;
-  color: #1a1a1a;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0.6rem 1.8rem;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.lf-btn-gold:hover { opacity: 0.85; }
-.lf-btn-gold.ghost {
-  background: transparent;
-  color: var(--color-gold-dark);
-  border-color: var(--color-gold);
-}
-.lf-btn-gold.ghost:hover { background: #fffbea; }
-
-.lf-link {
-  appearance: none;
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
+.lf-choice:hover,
+.lf-choice:focus-visible {
+  border-color: var(--color-accent);
+  background: #f9f0f2;
+  outline: none;
 }
 
-.lf-pane-nav { display: flex; justify-content: space-between; gap: var(--space-2); margin-top: var(--space-4); }
-
+/* ── Nudge / intro / notes ────────────────────────────────────────── */
+.lf-nudge,
+.lf-intro {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-soft-bg);
+  border-radius: var(--radius);
+  font-size: var(--fs-base);
+}
 .lf-nudge {
   margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-soft-bg);
   border-left: 4px solid var(--color-gold);
-  border-radius: var(--radius);
-  font-size: 0.92rem;
 }
-
-.lf-intro {
-  margin-bottom: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-soft-bg);
-  border-radius: var(--radius);
-  font-size: 0.95rem;
-}
+.lf-intro { margin-bottom: var(--space-3); }
 
 .lf-upload-note {
   margin-top: var(--space-2);
   padding: 0.6rem 0.9rem;
   background: #fdecc8;
-  color: #7a5b00;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  color: var(--color-gold-dark);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
 .lf-download a { display: inline-block; font-weight: 600; }
-.lf-rev { margin-left: var(--space-1); color: var(--color-muted); font-size: 0.8rem; }
-.lf-checklist { font-size: 0.9rem; }
+.lf-rev {
+  margin-left: var(--space-1);
+  color: var(--color-muted);
+  font-size: var(--fs-sm);
+}
+.lf-checklist { font-size: var(--fs-base); }
 
+.lf-disclaimer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+.lf-time-required {
+  margin: var(--space-2) 0;
+  font-size: var(--fs-base);
+}
+.lf-how-it-works-list {
+  margin: var(--space-1) 0 0;
+  padding-left: 1.2rem;
+  font-size: var(--fs-base);
+}
+.lf-how-it-works-list li { margin-bottom: var(--space-0); }
+
+/* ── Embedded Asana form ──────────────────────────────────────────── */
 .lf-embed {
   margin-top: var(--space-3);
   border: 1px solid var(--color-border);
@@ -555,26 +644,7 @@ a:hover { color: var(--color-accent-hover); }
   border: 0;
 }
 
-.lf-disclaimer {
-  margin-top: var(--space-3);
-  font-size: 0.88rem;
-  font-style: italic;
-  color: var(--color-muted);
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-2);
-}
-
-.lf-time-required {
-  margin: var(--space-2) 0;
-  font-size: 0.95rem;
-}
-.lf-how-it-works-list {
-  margin: var(--space-1) 0 0;
-  padding-left: 1.2rem;
-  font-size: 0.95rem;
-}
-.lf-how-it-works-list li { margin-bottom: 0.25rem; }
-
+/* ── Nested accordion (notary options) ────────────────────────────── */
 .lf-accordion {
   margin-top: var(--space-3);
   display: flex;
@@ -592,7 +662,7 @@ a:hover { color: var(--color-accent-hover); }
   align-items: center;
   padding: 0.75rem var(--space-2);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--fs-base);
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -611,13 +681,14 @@ a:hover { color: var(--color-accent-hover); }
 .lf-accordion-item[open] summary::after { transform: rotate(225deg); }
 .lf-accordion-item[open] summary { border-bottom: 1px solid var(--color-border); }
 .lf-accordion-body {
-  padding: var(--space-2) var(--space-2);
-  font-size: 0.9rem;
-  color: var(--color-text);
+  padding: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-body);
 }
-.lf-accordion-body p { margin: 0 0 0.4rem; }
+.lf-accordion-body p { margin: 0 0 var(--space-1); }
 .lf-accordion-body a { color: var(--color-accent); }
 
+/* ── Form 1 note + download block ─────────────────────────────────── */
 .lf-form1-note {
   margin-top: var(--space-3);
   display: flex;
@@ -626,16 +697,15 @@ a:hover { color: var(--color-accent-hover); }
   padding: var(--space-2);
   background: var(--color-soft-bg);
   border-radius: var(--radius);
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
   color: var(--color-muted);
 }
 .lf-form1-note::before {
   content: '↩';
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   flex: none;
   margin-top: 0.1rem;
 }
-
 .lf-download-block {
   display: flex;
   align-items: center;
@@ -645,47 +715,226 @@ a:hover { color: var(--color-accent-hover); }
   background: var(--color-soft-bg);
   border-radius: var(--radius);
 }
-.lf-download-icon {
-  font-size: 2rem;
-  line-height: 1;
-  flex: none;
+.lf-download-icon { font-size: 2rem; line-height: 1; flex: none; }
+.lf-download-block a { font-weight: 600; font-size: var(--fs-base); }
+.lf-download-block small {
+  display: block;
+  color: var(--color-muted);
+  font-size: var(--fs-sm);
 }
-.lf-download-block a { font-weight: 600; font-size: 0.95rem; }
-.lf-download-block small { display: block; color: var(--color-muted); font-size: 0.8rem; }
 
+/* =====================================================================
+   FAQ accordion
+   ===================================================================== */
+.faq-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.faq-entry {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
+}
+.faq-entry.is-open { box-shadow: var(--shadow); }
+
+.faq-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.faq-toggle:hover .faq-question { color: var(--color-accent); }
+
+.faq-question {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-snug);
+  color: var(--color-text);
+  transition: color 0.15s;
+}
+
+.faq-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+  position: relative;
+}
+.faq-icon::before,
+.faq-icon::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  border-radius: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.faq-icon::before { width: 4px; height: 55%; transition: transform 0.2s; }
+.faq-icon::after  { width: 55%; height: 4px; }
+.faq-entry.is-open .faq-icon::before { transform: translate(-50%, -50%) rotate(90deg); }
+
+.faq-body {
+  padding: 0 var(--space-3) var(--space-3);
+  font-size: var(--fs-base);
+  line-height: var(--lh-prose);
+  color: var(--color-body);
+}
+.faq-body[hidden] { display: none; }
+/* Restore prose spacing/lists reset by the theme's Tailwind preflight */
+.faq-body p { margin-top: 1.25em; margin-bottom: 1.25em; }
+.faq-body p:first-child { margin-top: 0; }
+.faq-body p:last-child { margin-bottom: 0; }
+.faq-body ul,
+.faq-body ol {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-inline-start: 1.625em;
+}
+.faq-body ul { list-style-type: disc; }
+.faq-body ol { list-style-type: decimal; }
+.faq-body li { margin-top: 0.5em; margin-bottom: 0.5em; }
+.faq-body a { color: var(--color-accent); }
+.faq-body strong { font-weight: 600; }
+
+/* =====================================================================
+   Theme interop — consolidated overrides
+   The Landslide theme's Tailwind preflight resets headings/lists to
+   inherit and its utility classes are specific, so flow-internal
+   elements need !important to win. Kept here in one place.
+   ===================================================================== */
+.tefcpt-licensure-page .pre-footer { display: none !important; }
+.faq h2 { margin-bottom: var(--space-5) !important; }
+
+/* Neutralize theme <ul>/<li> styling inside the rail (connector math
+   depends on our own paddings, so only the list chrome is reset). */
+.lf-steps,
+.lf-steps li {
+  list-style: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+.lf-steps { padding-left: 0 !important; }
+.lf-steps li::before,
+.lf-steps li::after { content: none !important; display: none !important; }
+/* …except our own connector pseudo-elements (mobile), re-enabled below. */
+/* The Landslide theme's @tailwindcss/typography ".prose :where(ul>li):not(...)"
+   sets padding-inline-start:0.375em (≈9px). :where() makes its specificity (0,1,0),
+   tying with ".lf-step" and winning on source order — which shrinks step padding-left
+   from 16px to 9px and shifts every dot ~7px off the connector line. !important on our
+   physical padding is what actually beats that rule (it is not !important). */
+.lf-steps > .lf-step  { padding: var(--space-1) var(--space-2) !important; }
+.lf-steps > .lf-group {
+  padding-left: calc(var(--space-2) + 24px + 0.75rem) !important;
+  margin: var(--space-2) 0 var(--space-1) !important;
+  border: none !important;
+}
+
+.lf-rail h1, .lf-rail h2, .lf-rail h3,
+.lf-rail h4, .lf-rail h5, .lf-rail h6 {
+  font: inherit !important;
+  color: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.lf-pane h2 {
+  font-family: var(--font-head) !important;
+  font-size: var(--fs-h3) !important;
+  font-weight: 700 !important;
+  color: var(--color-accent) !important;
+  line-height: var(--lh-snug) !important;
+  letter-spacing: var(--ls-heading) !important;
+  margin: 0 0 var(--space-2) !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: var(--space-1) !important;
+}
+.lf-pane-body,
+.lf-pane-body p {
+  font-size: var(--fs-base) !important;
+  line-height: var(--lh-prose) !important;
+}
+.lf-pane-body p { margin: 0 0 var(--space-2) !important; }
+.lf-pane-body p:last-child { margin-bottom: 0 !important; }
+
+/* =====================================================================
+   Responsive
+   ===================================================================== */
 @media (max-width: 760px) {
   .lf { grid-template-columns: 1fr; gap: var(--space-2); }
   .lf::before { display: none; }
   .lf-pane { padding: var(--space-3); }
+
+  /* Step tracker → connected horizontal dots */
   .lf-rail {
     position: sticky;
     top: 0;
     z-index: 5;
     background: var(--color-bg);
-    padding: var(--space-1) 0 var(--space-2);
-    border-bottom: 4px solid var(--color-gold);
+    padding: 0.6rem var(--space-3) var(--space-1);
+    border-bottom: 3px solid var(--color-gold);
     border-right: none;
   }
   .lf-rail-title { display: none; }
-  .lf-group { display: none; }
+  .lf-group { display: none !important; }
   .lf-steps {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: var(--space-1);
+    gap: 0;
   }
   .lf-steps::before { display: none; }
-  .lf-step {
-    padding: 0.25rem 0.5rem;
+  /* Match specificity (0,2,0) + !important of the desktop padding rule above so
+     the horizontal layout actually gets zero padding; otherwise the dots drop
+     ~20px below the top:11px connector. */
+  .lf-steps > .lf-step {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 !important;
+    position: relative;
   }
+  /* connector from center of this dot to center of next */
+  .lf-step:not(:last-child)::after {
+    content: '' !important;
+    display: block !important;
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: var(--color-border);
+    z-index: 0;
+  }
+  .lf-dot { position: relative; z-index: 1; }
   .lf-step-label { display: none; }
   .lf-active-label {
     display: block;
     margin: var(--space-1) 0 0;
-    font-weight: 600;
-    color: var(--color-text);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--color-muted);
+    text-align: center;
   }
+
   .lf-choice-grid { grid-template-columns: 1fr; }
   .hero { flex-direction: column-reverse; gap: var(--space-1); }
   .hero-logo img { max-height: 48px; }
+}
+
+@media (max-width: 600px) {
+  .page { padding: var(--space-2) var(--space-3) var(--space-4); }
+  .hero { padding-top: var(--space-1); }
+  .profession-grid-items { grid-template-columns: 1fr; }
 }

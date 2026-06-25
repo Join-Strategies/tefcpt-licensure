@@ -24,7 +24,10 @@ if ( ! function_exists( 'tefcpt_lic_field' ) ) {
 $hero_intro       = tefcpt_lic_field( 'hero_intro_copy', $post_id );
 $eligibility_text = tefcpt_lic_field( 'eligibility_copy', $post_id );
 $contact_text     = tefcpt_lic_field( 'contact_footer', $post_id );
-$faq_html         = tefcpt_lic_field( 'faq', $post_id );
+$faq_items        = tefcpt_lic_field( 'faq_items', $post_id );
+if ( ! is_array( $faq_items ) ) {
+	$faq_items = [];
+}
 $professions_raw  = tefcpt_lic_field( 'professions', $post_id );
 
 if ( ! is_array( $professions_raw ) ) {
@@ -136,10 +139,33 @@ ob_start();
 	<script type="application/json" id="flow-processes"><?php echo wp_json_encode( $processes ); ?></script>
 	<script type="application/json" id="flow-config"><?php echo wp_json_encode( $config ); ?></script>
 
-	<?php if ( $faq_html ) : ?>
+	<?php if ( ! empty( $faq_items ) ) : ?>
 		<section class="faq">
 			<h2>Frequently asked questions</h2>
-			<?php echo wp_kses_post( $faq_html ); ?>
+			<div class="faq-list">
+				<?php foreach ( $faq_items as $i => $item ) :
+					$body_id = 'faq-body-' . $i;
+				?>
+				<div class="faq-entry">
+					<button
+						type="button"
+						class="faq-toggle"
+						aria-expanded="false"
+						aria-controls="<?php echo esc_attr( $body_id ); ?>"
+					>
+						<span class="faq-question"><?php echo esc_html( $item['question'] ); ?></span>
+						<span class="faq-icon" aria-hidden="true"></span>
+					</button>
+					<div
+						class="faq-body"
+						id="<?php echo esc_attr( $body_id ); ?>"
+						hidden
+					>
+						<?php echo wp_kses_post( $item['answer'] ); ?>
+					</div>
+				</div>
+				<?php endforeach; ?>
+			</div>
 		</section>
 	<?php endif; ?>
 
