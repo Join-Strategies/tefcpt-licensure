@@ -92,7 +92,7 @@
   // ---- Item model (the rail) --------------------------------------------
   function items() {
     const list = [
-      { key: 'elig', label: 'Get Started', kind: 'elig' },
+      { key: 'elig', label: 'Get started', kind: 'elig' },
       { key: 'prof', label: 'Choose profession', kind: 'prof' },
     ];
     if (state.slug) {
@@ -147,19 +147,19 @@
 
     if (it.kind === 'elig') {
       const intro = CONFIG.heroText ? `<p><strong>${md(CONFIG.heroText)}</strong></p>` : '';
-      return `<h2>Get Started / Eligibility / How it Works</h2>
+      return `<h2>Get started</h2>
         <div class="lf-pane-body">
           ${intro}
           <p class="lf-time-required"><strong>Time required:</strong> 5&ndash;10 minutes with completed materials</p>
           <p><strong>You&rsquo;ll need to:</strong></p>
           <ul class="lf-how-it-works-list">
-            <li>Pick your Profession</li>
-            <li>Obtain License information / Complete paperwork</li>
+            <li>Pick your profession</li>
+            <li>Obtain license information / complete paperwork</li>
             <li>Complete reimbursement intake forms</li>
           </ul>
         </div>
         <div class="lf-actions" style="margin-top:var(--space-3)">
-          <button class="lf-btn-outline" data-act="elig-yes">Get Started</button>
+          <button class="lf-btn-outline" data-act="elig-yes">Get started</button>
         </div>
         <p class="lf-disclaimer">${md(CONFIG.eligibilityText)}</p>`;
     }
@@ -190,7 +190,7 @@
         `<button class="lf-btn-gold" data-act="feetype-pick" data-fee-type="${o.val}">${esc(o.label)}</button>`
       ).join('');
       return `<h2>What fee do you need covered? ${badge(p)}</h2>
-        <div class="lf-actions" style="margin-top:var(--space-3);gap:var(--space-2)">${btns}</div>`;
+        <div class="lf-actions" style="margin-top:var(--space-3);gap:var(--space-2);flex-wrap:nowrap">${btns}</div>`;
     }
 
     if (it.kind === 'form1gate') {
@@ -204,21 +204,21 @@
             <p><strong>How to get your Form 1 notarized:</strong></p>
             <div class="lf-accordion">
               <details class="lf-accordion-item">
-                <summary>Local Walk-In Locations</summary>
+                <summary>Local walk-in locations</summary>
                 <div class="lf-accordion-body">
                   <p>Notarization is offered at most banks and credit unions, shipping and copy centers, and certain New York Public Library branches.</p>
                   <p><strong>Typical cost:</strong> $0&ndash;$10</p>
                 </div>
               </details>
               <details class="lf-accordion-item">
-                <summary>Remote Online Notarization (RON)</summary>
+                <summary>Remote online notarization (RON)</summary>
                 <div class="lf-accordion-body">
                   <p>Services: <a href="https://www.notarize.com" target="_blank" rel="noopener">Notarize</a> or <a href="https://www.onenotary.us" target="_blank" rel="noopener">OneNotary</a>.</p>
-                  <p><strong>Typical Cost:</strong> $25</p>
+                  <p><strong>Typical cost:</strong> $25</p>
                 </div>
               </details>
               <details class="lf-accordion-item">
-                <summary>Mobile Notaries</summary>
+                <summary>Mobile notaries</summary>
                 <div class="lf-accordion-body">
                   <p>Services: <a href="https://www.notary911.com" target="_blank" rel="noopener">Notary911</a> or <a href="https://www.travelingnotarynewyork.com" target="_blank" rel="noopener">Traveling Notary New York</a>.</p>
                   <p><strong>Typical cost:</strong> $75&ndash;$150</p>

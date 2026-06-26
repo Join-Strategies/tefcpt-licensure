@@ -2,7 +2,7 @@
 /**
  * Plugin Name: TEFCPT Licensure Page
  * Description: Guided licensure and exam-fee flow for TEF CPT participants. Registers the tefcpt/licensure-page Gutenberg block and enqueues assets on pages using the page-licensure.php template.
- * Version:     0.3.7
+ * Version:     0.4.4
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -25,7 +25,13 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( get_page_template_slug() !== 'page-licensure.php' ) {
 		return;
 	}
-	$v = '0.3.7';
+	$v = '0.4.4';
+	wp_enqueue_style(
+		'tefcpt-poppins',
+		'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap',
+		[],
+		null
+	);
 	wp_enqueue_style(
 		'tefcpt-licensure',
 		plugin_dir_url( __FILE__ ) . 'assets/styles.css',

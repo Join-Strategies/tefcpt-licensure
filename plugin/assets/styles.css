@@ -25,7 +25,7 @@
 
   /* ── Type families ─────────────────────────────────────────────── */
   --font-head: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 
   /* ── Type scale (editorial; fluid where it earns it) ───────────── */
   --fs-display: clamp(2.25rem, 5vw, 3rem);    /* hero H1 */
@@ -339,6 +339,7 @@ a:hover { color: var(--color-accent-hover); }
   font-size: var(--fs-base);
   padding: 0.7rem 1.75rem;
   border-radius: var(--radius-pill);
+  white-space: nowrap;
 }
 .lf-btn-gold:hover { opacity: 0.85; }
 .lf-btn-gold.ghost {
@@ -403,11 +404,14 @@ a:hover { color: var(--color-accent-hover); }
    Guided flow (Option B sidebar). Shared by Astro + WP block;
    driven by public/licensure-flow.js.
    ===================================================================== */
-.lf-root { margin: var(--space-5) 0; }
+.lf-root {
+  margin: var(--space-5) 0;
+  font-family: var(--font-body) !important;
+}
 
 .lf {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: var(--space-4);
   align-items: start;
   position: relative;
@@ -417,7 +421,7 @@ a:hover { color: var(--color-accent-hover); }
   position: absolute;
   top: 0;
   bottom: 0;
-  left: calc(280px + (var(--space-4) - 4px) / 2);
+  left: calc(200px + (var(--space-4) - 4px) / 2);
   width: 4px;
   border-radius: 2px;
   background: var(--color-gold);
@@ -862,6 +866,7 @@ a:hover { color: var(--color-accent-hover); }
 }
 .lf-pane-body,
 .lf-pane-body p {
+  font-family: var(--font-body) !important;
   font-size: var(--fs-base) !important;
   line-height: var(--lh-prose) !important;
 }
@@ -874,7 +879,7 @@ a:hover { color: var(--color-accent-hover); }
 @media (max-width: 760px) {
   .lf { grid-template-columns: 1fr; gap: var(--space-2); }
   .lf::before { display: none; }
-  .lf-pane { padding: var(--space-3); }
+  .lf-pane { padding: var(--space-2); }
 
   /* Step tracker → connected horizontal dots */
   .lf-rail {
@@ -928,13 +933,14 @@ a:hover { color: var(--color-accent-hover); }
     text-align: center;
   }
 
+  .lf-actions { flex-wrap: wrap !important; }
   .lf-choice-grid { grid-template-columns: 1fr; }
   .hero { flex-direction: column-reverse; gap: var(--space-1); }
   .hero-logo img { max-height: 48px; }
 }
 
 @media (max-width: 600px) {
-  .page { padding: var(--space-2) var(--space-3) var(--space-4); }
+  .page { padding: var(--space-2) 0.75rem var(--space-4); }
   .hero { padding-top: var(--space-1); }
   .profession-grid-items { grid-template-columns: 1fr; }
 }
