@@ -32,8 +32,7 @@
 
   function form1Html(p) {
     if (!p.form1Pdf) return '';
-    const rev = p.form1Revision ? ` <small class="lf-rev">${esc(p.form1Revision)}</small>` : '';
-    return `<p class="lf-download"><a href="${p.form1Pdf}" download>Download Form 1 (PDF)</a>${rev}</p>`;
+    return `<a href="${p.form1Pdf}" download>Download Form 1 (PDF)</a>`;
   }
   function checklistHtml(p) {
     if (!p.checklists || !p.checklists.length) return '';
@@ -198,8 +197,7 @@
         return `<h2>Download, fill out, and notarize your Form 1</h2>
           <div class="lf-pane-body">
             <div class="lf-download-block">
-              <span class="lf-download-icon">&#11123;</span>
-              <div>${form1Html(p) || '<p>Download link coming soon.</p>'}<small>PDF download</small></div>
+              ${form1Html(p) || '<span>Download link coming soon.</span>'}
             </div>
             <p><strong>How to get your Form 1 notarized:</strong></p>
             <div class="lf-accordion">
@@ -310,6 +308,19 @@
         </nav>
         <section class="lf-pane" aria-live="polite">${pane(active)}</section>
       </div>`;
+    requestAnimationFrame(updateRailBottom);
+  }
+
+  function updateRailBottom() {
+    const stepsList = rootEl.querySelector('.lf-steps');
+    if (!stepsList) return;
+    const dots = stepsList.querySelectorAll('.lf-dot');
+    if (!dots.length) return;
+    const containerRect = stepsList.getBoundingClientRect();
+    const lastDot = dots[dots.length - 1];
+    const lastDotRect = lastDot.getBoundingClientRect();
+    const bottomOffset = containerRect.bottom - (lastDotRect.top + lastDotRect.height / 2);
+    stepsList.style.setProperty('--rail-bottom', Math.round(bottomOffset) + 'px');
   }
 
   // ---- URL deep-linking -------------------------------------------------
