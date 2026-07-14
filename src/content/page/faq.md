@@ -53,4 +53,4 @@ Please don't — duplicate submissions slow processing. Submit once and allow up
 CASAC uses a different process through OASAS. Submit the request form on the CASAC card, then wait for TEF to email you a confirmation letter to upload with your OASAS application.
 
 **What if my profession isn't listed here?**
-Contact (Email TBD). This page only covers professions where TEF currently pays licensure or exam fees.
+This page only covers professions where TEF currently pays licensure or exam fees. Please contact NEED EMAIL if you need further assistance.

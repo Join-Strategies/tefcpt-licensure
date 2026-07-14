@@ -805,6 +805,9 @@ a:hover { color: var(--color-accent-hover); }
    elements need !important to win. Kept here in one place.
    ===================================================================== */
 .tefcpt-licensure-page .pre-footer { display: none !important; }
+.tefcpt-licensure-page .sitewide-footer-button,
+.tefcpt-licensure-page .sitewide-footer-button .label { font-family: 'Poppins', sans-serif !important; }
+.contact-footer p { font-family: var(--font-body) !important; }
 .faq h2 { margin-bottom: var(--space-5) !important; }
 
 /* Neutralize theme <ul>/<li> styling inside the rail (connector math

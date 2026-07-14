@@ -264,7 +264,7 @@
 
     return `<h2>You're all set</h2>
       <div class="lf-pane-body">${md(CONFIG.contactText)}</div>
-      <div class="lf-pane-nav"><button class="lf-btn" data-act="restart">Start over</button></div>`;
+      <div class="lf-pane-nav"><button class="lf-btn" data-act="restart">Return to Start</button></div>`;
   }
 
   // ---- Render -----------------------------------------------------------
